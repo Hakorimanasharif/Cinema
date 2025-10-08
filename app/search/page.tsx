@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
@@ -10,7 +12,7 @@ interface SearchPageProps {
 }
 
 export default function SearchPage({ searchParams }: SearchPageProps) {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
   const query = searchParams.q || ""
   const [results, setResults] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)

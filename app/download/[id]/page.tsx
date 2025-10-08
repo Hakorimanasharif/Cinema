@@ -26,6 +26,7 @@ export default function DownloadPage({ params }: DownloadPageProps) {
   }
 
   const handleDownload = (quality: string) => {
+    if (!movie.videoUrl) return
     setDownloadState("downloading")
 
     // Simulate download progress
@@ -35,9 +36,9 @@ export default function DownloadPage({ params }: DownloadPageProps) {
           clearInterval(interval)
           setDownloadState("complete")
 
-          // Create a download link for the sample video
+          // Create a download link for the movie video
           const link = document.createElement("a")
-          link.href = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          link.href = movie.videoUrl
           link.download = `${movie.title.replace(/\s+/g, "_")}_${quality}.mp4`
           document.body.appendChild(link)
           link.click()

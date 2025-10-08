@@ -44,7 +44,7 @@ export default function PlayPage({ params }: PlayPageProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -78,15 +78,6 @@ export default function PlayPage({ params }: PlayPageProps) {
       fetchMovie()
     }
   }, [id, API_BASE])
-
-  if (!movie) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <LoadingSpinner size="lg" color="primary" />
-      </div>
-    )
-  }
-
   useEffect(() => {
     if (!movie) return
 
@@ -112,6 +103,16 @@ export default function PlayPage({ params }: PlayPageProps) {
       clearTimeout(bufferingTimeout)
     }
   }, [movie])
+
+  if (!movie) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <LoadingSpinner size="lg" color="primary" />
+      </div>
+    )
+  }
+
+  
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -153,29 +154,17 @@ export default function PlayPage({ params }: PlayPageProps) {
   }
 
   const handleDownload = () => {
+    if (!movie.videoUrl) return
     setIsLoading(true)
 
     // Simulate download delay
     setTimeout(() => {
-      // For Fast X, provide a direct download link to the YouTube video
-      if (movie.id === "25") {
-        // In a real app, you would implement server-side YouTube video downloading
-        // This is just a placeholder that would download the sample video
-        const link = document.createElement("a")
-        link.href = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        link.download = `${movie.title.replace(/\s+/g, "_")}.mp4`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      } else {
-        // For other movies, download the sample video
-        const link = document.createElement("a")
-        link.href = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        link.download = `${movie.title.replace(/\s+/g, "_")}.mp4`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      }
+      const link = document.createElement("a")
+      link.href = movie.videoUrl
+      link.download = `${movie.title.replace(/\s+/g, "_")}.mp4`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
 
       setIsLoading(false)
     }, 2000)
@@ -254,7 +243,7 @@ export default function PlayPage({ params }: PlayPageProps) {
               onLoadedData={() => setIsBuffering(false)}
             >
               <source
-                src={movie.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"}
+                src={movie.videoUrl}
                 type="video/mp4"
               />
               Your browser does not support the video tag.

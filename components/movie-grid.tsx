@@ -10,7 +10,7 @@ interface MovieGridProps {
 }
 
 export default function MovieGrid({ category, sortBy = "newest" }: MovieGridProps) {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
   const [showAll, setShowAll] = useState(false)
   const [movies, setMovies] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)

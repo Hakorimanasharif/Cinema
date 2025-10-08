@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Play, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function FeaturedSlider() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
   const [currentSlide, setCurrentSlide] = useState(0)
   const [banners, setBanners] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
