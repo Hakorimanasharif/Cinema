@@ -262,10 +262,19 @@ export default function PlayPage({ params }: PlayPageProps) {
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`
   }
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const videoUrl = getCurrentVideoUrl()
     if (!videoUrl) return
     setIsLoading(true)
+
+    try {
+      // Track download
+      await fetch(`${API_BASE}/api/stats/download`, {
+        method: 'POST',
+      })
+    } catch (error) {
+      console.error("Failed to track download", error)
+    }
 
     // Simulate download delay
     setTimeout(() => {

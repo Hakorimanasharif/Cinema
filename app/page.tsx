@@ -33,7 +33,20 @@ export default function Home() {
         setIsLoadingCategories(false)
       }
     }
+
+    // Track visit
+    const trackVisit = async () => {
+      try {
+        await fetch(`${API_BASE}/api/stats/visit`, {
+          method: 'POST',
+        })
+      } catch (error) {
+        console.error("Failed to track visit", error)
+      }
+    }
+
     loadCategories()
+    trackVisit()
   }, [API_BASE])
 
   return (

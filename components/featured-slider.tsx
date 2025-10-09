@@ -48,7 +48,7 @@ export default function FeaturedSlider() {
         const mapped = data.map((b: any) => ({
           id: b._id,
           title: b.title,
-          description: b.title,
+          description: b.subtitle || b.title,
           coverImage: b.imageUrl,
         }))
         setBanners(mapped)
