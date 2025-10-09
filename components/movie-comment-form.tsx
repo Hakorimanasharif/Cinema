@@ -5,35 +5,45 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Send } from "lucide-react"
 import LoadingSpinner from "./loading-spinner"
 
 interface MovieCommentFormProps {
-  onCommentSubmit: (comment: string) => void
+  onCommentSubmit: (text: string, username: string) => void
 }
 
 export default function MovieCommentForm({ onCommentSubmit }: MovieCommentFormProps) {
   const [comment, setComment] = useState("")
+  const [username, setUsername] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!comment.trim()) return
+    if (!comment.trim() || !username.trim()) return
 
     setIsSubmitting(true)
 
     // Submit the comment
-    onCommentSubmit(comment)
+    onCommentSubmit(comment, username)
 
     // Reset form
     setComment("")
+    setUsername("")
     setIsSubmitting(false)
   }
 
   return (
     <form onSubmit={handleSubmit} className="mb-8">
       <h3 className="text-lg font-semibold mb-2">Add Your Comment</h3>
+      <Input
+        placeholder="Your display name"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        className="bg-gray-800 border-gray-700 mb-3"
+        required
+      />
       <Textarea
         placeholder="Share your thoughts about this movie..."
         value={comment}

@@ -91,22 +91,21 @@ export default function MoviePage({ params }: MoviePageProps) {
   }
 
   const handleDownload = () => {
+    if (!movie.videoUrl) return
     setIsLoading(true)
-
+  
     // Simulate download delay
     setTimeout(() => {
-      // Create a download link for the sample video
       const link = document.createElement("a")
-      link.href = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+      link.href = movie.videoUrl
       link.download = `${movie.title.replace(/\s+/g, "_")}.mp4`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-
+  
       setIsLoading(false)
     }, 1500)
   }
-
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}

@@ -31,14 +31,14 @@ export default function MovieComments({ movieId, movieTitle }: MovieCommentsProp
     fetchComments()
   }, [movieId, API_BASE])
 
-  const handleCommentSubmit = async (text: string) => {
+  const handleCommentSubmit = async (text: string, username: string) => {
     try {
       const res = await fetch(`${API_BASE}/api/movies/${movieId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, username: 'Anonymous' }), // For now, anonymous
+        body: JSON.stringify({ text, username }),
       })
       const newComment = await res.json()
       if (res.ok) {

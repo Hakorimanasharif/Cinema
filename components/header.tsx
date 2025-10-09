@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation"
 import { Menu, X, Phone } from "lucide-react"
 import SearchBar from "@/components/search-bar"
 
+import { useSettings } from "./settings-context"
+
 export default function Header() {
+  const { settings } = useSettings()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -32,7 +35,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center">
-            <h1 className="text-xl font-bold text-red-600">Cinemax</h1>
+            <h1 className="text-xl font-bold text-red-600">{settings.siteName || "Cinemax"}</h1>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">

@@ -7,15 +7,16 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Search, X } from "lucide-react"
-import { searchMovies } from "@/lib/data"
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isExpanded, setIsExpanded] = useState(false)
-  const [searchResults, setSearchResults] = useState<ReturnType<typeof searchMovies>>([])
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,13 +30,38 @@ export default function SearchBar() {
   }, [])
 
   useEffect(() => {
-    if (searchQuery.trim().length > 1) {
-      const results = searchMovies(searchQuery)
-      setSearchResults(results)
-    } else {
-      setSearchResults([])
+    const fetchSearchResults = async () => {
+      if (searchQuery.trim().length > 1) {
+        setIsSearching(true)
+        try {
+          const res = await fetch(`${API_BASE}/api/movies?q=${encodeURIComponent(searchQuery)}`)
+          const data = await res.json()
+          if (res.ok) {
+            const mapped = (data || []).slice(0, 5).map((m: any) => ({
+              id: m._id,
+              title: m.title,
+              year: m.year,
+              posterImage: m.coverImage,
+              genres: [m.category].filter(Boolean), // Use category as genre
+            }))
+            setSearchResults(mapped)
+          } else {
+            setSearchResults([])
+          }
+        } catch (error) {
+          console.error("Search failed:", error)
+          setSearchResults([])
+        } finally {
+          setIsSearching(false)
+        }
+      } else {
+        setSearchResults([])
+      }
     }
-  }, [searchQuery])
+
+    const debounceTimer = setTimeout(fetchSearchResults, 300) // Debounce for 300ms
+    return () => clearTimeout(debounceTimer)
+  }, [searchQuery, API_BASE])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +78,7 @@ export default function SearchBar() {
   const clearSearch = () => {
     setSearchQuery("")
     setSearchResults([])
+    setIsSearching(false)
     if (inputRef.current) {
       inputRef.current.focus()
     }
@@ -94,13 +121,17 @@ export default function SearchBar() {
       {/* Search results dropdown */}
       {isExpanded && searchQuery.trim().length > 1 && (
         <div className="absolute top-full right-0 mt-2 w-[350px] max-h-[70vh] overflow-y-auto bg-gray-900 rounded-lg shadow-xl border border-gray-700 z-50">
-          {searchResults.length > 0 ? (
+          {isSearching ? (
+            <div className="p-4 text-center">
+              <p className="text-sm text-gray-400">Searching...</p>
+            </div>
+          ) : searchResults.length > 0 ? (
             <>
               <div className="p-3 border-b border-gray-800">
                 <h3 className="text-sm font-medium">Search Results</h3>
               </div>
               <ul>
-                {searchResults.slice(0, 5).map((movie) => (
+                {searchResults.map((movie) => (
                   <li key={movie.id} className="border-b border-gray-800 last:border-b-0">
                     <Link
                       href={`/movie/${movie.id}`}
@@ -109,7 +140,7 @@ export default function SearchBar() {
                     >
                       <div className="relative w-12 h-16 flex-shrink-0">
                         <Image
-                          src={movie.id === "25" ? "/images/fast-x.jpg" : movie.posterImage || "/placeholder.svg"}
+                          src={movie.posterImage && movie.posterImage.trim() ? movie.posterImage : "/placeholder.svg"}
                           alt={movie.title}
                           fill
                           className="object-cover rounded"
@@ -125,17 +156,15 @@ export default function SearchBar() {
                   </li>
                 ))}
               </ul>
-              {searchResults.length > 5 && (
-                <div className="p-3 border-t border-gray-800">
-                  <Link
-                    href={`/search?q=${encodeURIComponent(searchQuery)}`}
-                    className="text-sm text-red-500 hover:text-red-400"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    View all {searchResults.length} results
-                  </Link>
-                </div>
-              )}
+              <div className="p-3 border-t border-gray-800">
+                <Link
+                  href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                  className="text-sm text-red-500 hover:text-red-400"
+                  onClick={() => setIsExpanded(false)}
+                >
+                  View all results
+                </Link>
+              </div>
             </>
           ) : (
             <div className="p-4 text-center">

@@ -2,18 +2,19 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useEffect, useState } from "react"
+import { useEffect, useState, use } from "react"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import MovieCard from "@/components/movie-card"
 
 interface SearchPageProps {
-  searchParams: { q: string }
+  searchParams: Promise<{ q: string }>
 }
 
 export default function SearchPage({ searchParams }: SearchPageProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
-  const query = searchParams.q || ""
+  const params = use(searchParams)
+  const query = params.q || ""
   const [results, setResults] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -59,13 +60,11 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
         {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
         {results.length === 0 && !isLoading ? (
           <div className="text-center py-12 bg-gray-900 rounded-lg">
-            <Image
-              src="/placeholder.svg?height=120&width=120"
-              alt="No results"
-              width={120}
-              height={120}
-              className="mx-auto mb-4 opacity-50"
-            />
+            <div className="mx-auto mb-4 w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center opacity-50">
+              <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <p className="text-xl text-gray-400 mb-2">No results found for "{query}"</p>
             <p className="text-sm text-gray-500 mb-6">Try different keywords or browse our categories</p>
             <div className="flex flex-wrap justify-center gap-3">

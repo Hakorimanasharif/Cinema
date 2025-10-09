@@ -2,13 +2,17 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { SettingsProvider } from "@/components/settings-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Cinemax - Stream Movies, TV Shows & Sports",
   description: "Watch the latest movies, TV shows, and live sports on Cinemax",
-   
+  verification: {
+    google: "google01d1931b39278409",
+  },
+
 }
 
 export default function RootLayout({
@@ -18,7 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <SettingsProvider>
+          {children}
+        </SettingsProvider>
+      </body>
     </html>
   )
 }

@@ -13,7 +13,7 @@ interface CategoryRowProps {
 
 export default function CategoryRow({ title, category }: CategoryRowProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
-  const [movies, setMovies] = useState<any[]>([])
+  const [items, setItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,35 +24,38 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
       try {
         let url = `${API_BASE}/api/movies`
         const params = new URLSearchParams()
-        if (category === "trending") {
+        if (category === "series") {
+          url = `${API_BASE}/api/series`
+        } else if (category === "trending") {
           params.append("sort", "trending")
         } else if (category === "newest") {
           params.append("sort", "newest")
         } else if (category) {
           params.append("category", category)
         }
-        if (params.toString()) {
+        if (params.toString() && category !== "series") {
           url += `?${params.toString()}`
         }
         const res = await fetch(url)
         const data = await res.json()
-        if (!res.ok) throw new Error(data?.error || "Failed to fetch movies")
-        const mapped = data.map((m: any) => ({
-          id: m._id,
-          title: m.title,
-          year: m.year,
-          posterImage: m.coverImage,
-          trailerYouTubeId: m.trailerYouTubeId,
+        if (!res.ok) throw new Error(data?.error || "Failed to fetch items")
+        const mapped = data.map((item: any) => ({
+          id: item._id,
+          title: item.title,
+          year: item.year,
+          posterImage: item.coverImage,
+          trailerYouTubeId: item.trailerYouTubeId,
         }))
-        setMovies(mapped)
+        setItems(mapped)
       } catch (e: any) {
-        setError(e?.message || "Failed to load movies")
+        setError(e?.message || "Failed to load items")
       } finally {
         setIsLoading(false)
       }
     }
     load()
   }, [API_BASE, category])
+
   const rowRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const [showRightArrow, setShowRightArrow] = useState(true)
@@ -81,7 +84,7 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">{title}</h2>
-        <Link href={`/category/${category}`}>
+        <Link href={category === "series" ? "/series" : `/category/${category}`}>
           <Button variant="link" className="text-red-500 hover:text-red-400">
             View All
           </Button>
@@ -106,12 +109,12 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
           onScroll={handleScroll}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {(isLoading ? Array.from({ length: 6 }) : movies).map((movie: any, idx: number) => (
-            <div key={movie?.id || idx} className="w-[180px]">
+          {(isLoading ? Array.from({ length: 6 }) : items).map((item: any, idx: number) => (
+            <div key={item?.id || idx} className="w-[180px]">
               {isLoading ? (
                 <div className="animate-pulse h-[270px] bg-gray-800 rounded-md" />
               ) : (
-                <MovieCard movie={movie} className="w-[180px]" />
+                <MovieCard movie={item} className="w-[180px]" />
               )}
             </div>
           ))}
@@ -130,4 +133,3 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
     </div>
   )
 }
-

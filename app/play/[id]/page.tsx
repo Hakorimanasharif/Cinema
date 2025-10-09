@@ -15,14 +15,18 @@ import {
   FastForward,
   ArrowLeft,
   Film,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 
 import YouTubePlayer from "@/components/youtube-player"
 import LoadingSpinner from "@/components/loading-spinner"
+import MovieComments from "@/components/movie-comments"
 
 interface PlayPageProps {
   params: Promise<{
@@ -30,9 +34,39 @@ interface PlayPageProps {
   }>
 }
 
+interface Episode {
+  episodeNumber: number
+  title: string
+  description?: string
+  duration?: string
+  videoUrl?: string
+}
+
+interface Season {
+  seasonNumber: number
+  episodes: Episode[]
+}
+
+interface Series {
+  _id: string
+  title: string
+  description?: string
+  year?: number
+  rating?: string | number
+  coverImage?: string
+  trailerYouTubeId?: string
+  category?: string
+  region?: string
+  translator?: string
+  seasons?: Season[]
+}
+
 export default function PlayPage({ params }: PlayPageProps) {
   const { id } = use(params)
-  const [movie, setMovie] = useState<any>(null)
+  const [content, setContent] = useState<any>(null)
+  const [isSeries, setIsSeries] = useState(false)
+  const [currentSeason, setCurrentSeason] = useState(1)
+  const [currentEpisode, setCurrentEpisode] = useState(1)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -47,25 +81,46 @@ export default function PlayPage({ params }: PlayPageProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
 
   useEffect(() => {
-    const fetchMovie = async () => {
+    const fetchContent = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/api/movies/${id}`)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data?.error || "Movie not found")
-        setMovie({
-          id: data._id,
-          title: data.title,
-          description: data.description,
-          year: data.year,
-          duration: data.duration,
-          rating: data.rating,
-          coverImage: data.coverImage,
-          trailerYouTubeId: data.trailerYouTubeId,
-          region: data.region,
-          translator: data.translator,
-          videoUrl: data.videoUrl,
-        })
+        // Try to fetch as series first
+        const seriesRes = await fetch(`${API_BASE}/api/series/${id}`)
+        if (seriesRes.ok) {
+          const seriesData = await seriesRes.json()
+          setContent(seriesData)
+          setIsSeries(true)
+
+          // Get season and episode from URL params
+          const urlParams = new URLSearchParams(window.location.search)
+          const season = parseInt(urlParams.get("season") || "1")
+          const episode = parseInt(urlParams.get("episode") || "1")
+          setCurrentSeason(season)
+          setCurrentEpisode(episode)
+          return
+        }
+
+        // If not series, try movie
+        const movieRes = await fetch(`${API_BASE}/api/movies/${id}`)
+        if (movieRes.ok) {
+          const movieData = await movieRes.json()
+          setContent({
+            id: movieData._id,
+            title: movieData.title,
+            description: movieData.description,
+            year: movieData.year,
+            duration: movieData.duration,
+            rating: movieData.rating,
+            coverImage: movieData.coverImage,
+            trailerYouTubeId: movieData.trailerYouTubeId,
+            region: movieData.region,
+            translator: movieData.translator,
+            videoUrl: movieData.videoUrl,
+          })
+          setIsSeries(false)
+        } else {
+          throw new Error("Content not found")
+        }
       } catch (e: any) {
         console.error(e?.message)
         notFound()
@@ -73,16 +128,17 @@ export default function PlayPage({ params }: PlayPageProps) {
         setIsLoading(false)
       }
     }
-    
+
     if (id) {
-      fetchMovie()
+      fetchContent()
     }
   }, [id, API_BASE])
+
   useEffect(() => {
-    if (!movie) return
+    if (!content) return
 
     // Check if this is Fast X (ID 25) and automatically show YouTube player
-    if (movie.id === "25") {
+    if (!isSeries && content.id === "25") {
       setShowYouTubePlayer(true)
     }
 
@@ -102,17 +158,70 @@ export default function PlayPage({ params }: PlayPageProps) {
       document.removeEventListener("fullscreenchange", handleFullscreenChange)
       clearTimeout(bufferingTimeout)
     }
-  }, [movie])
+  }, [content, isSeries])
 
-  if (!movie) {
+  const getCurrentVideoUrl = () => {
+    if (isSeries && content.seasons) {
+      const season = content.seasons.find((s: Season) => s.seasonNumber === currentSeason)
+      if (season) {
+        const episode = season.episodes.find((e: Episode) => e.episodeNumber === currentEpisode)
+        return episode?.videoUrl
+      }
+    }
+    return content?.videoUrl
+  }
+
+  const getCurrentEpisode = () => {
+    if (isSeries && content.seasons) {
+      const season = content.seasons.find((s: Season) => s.seasonNumber === currentSeason)
+      if (season) {
+        return season.episodes.find((e: Episode) => e.episodeNumber === currentEpisode)
+      }
+    }
+    return null
+  }
+
+  const navigateEpisode = (direction: 'prev' | 'next') => {
+    if (!isSeries || !content.seasons) return
+
+    const currentSeasonData = content.seasons.find((s: Season) => s.seasonNumber === currentSeason)
+    if (!currentSeasonData) return
+
+    let newSeason = currentSeason
+    let newEpisode = currentEpisode
+
+    if (direction === 'next') {
+      if (currentEpisode < currentSeasonData.episodes.length) {
+        newEpisode = currentEpisode + 1
+      } else if (currentSeason < content.seasons.length) {
+        newSeason = currentSeason + 1
+        newEpisode = 1
+      }
+    } else {
+      if (currentEpisode > 1) {
+        newEpisode = currentEpisode - 1
+      } else if (currentSeason > 1) {
+        newSeason = currentSeason - 1
+        const prevSeasonData = content.seasons.find((s: Season) => s.seasonNumber === newSeason)
+        newEpisode = prevSeasonData?.episodes.length || 1
+      }
+    }
+
+    setCurrentSeason(newSeason)
+    setCurrentEpisode(newEpisode)
+
+    // Update URL
+    const newUrl = `/play/${id}?season=${newSeason}&episode=${newEpisode}`
+    window.history.replaceState({}, '', newUrl)
+  }
+
+  if (!content) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <LoadingSpinner size="lg" color="primary" />
       </div>
     )
   }
-
-  
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -154,14 +263,16 @@ export default function PlayPage({ params }: PlayPageProps) {
   }
 
   const handleDownload = () => {
-    if (!movie.videoUrl) return
+    const videoUrl = getCurrentVideoUrl()
+    if (!videoUrl) return
     setIsLoading(true)
 
     // Simulate download delay
     setTimeout(() => {
       const link = document.createElement("a")
-      link.href = movie.videoUrl
-      link.download = `${movie.title.replace(/\s+/g, "_")}.mp4`
+      link.href = videoUrl
+      const title = isSeries ? `${content.title} S${currentSeason}E${currentEpisode}` : content.title
+      link.download = `${title.replace(/\s+/g, "_")}.mp4`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -194,6 +305,9 @@ export default function PlayPage({ params }: PlayPageProps) {
     }
   }
 
+  const currentEpisodeData = getCurrentEpisode()
+  const videoUrl = getCurrentVideoUrl()
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -202,12 +316,78 @@ export default function PlayPage({ params }: PlayPageProps) {
       <main className="bg-black pt-16">
         {/* Back button */}
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link href={`/movie/${movie.id}`}>
+          <Link href={isSeries ? `/series/${content._id}` : `/movie/${content.id}`}>
             <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to movie details
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to {isSeries ? "series" : "movie"} details
             </Button>
           </Link>
         </div>
+
+        {/* Episode Navigation for Series */}
+        {isSeries && (
+          <div className="max-w-7xl mx-auto px-4 mb-4">
+            <div className="flex items-center justify-between bg-gray-900/50 rounded-lg p-4">
+              <div className="flex items-center gap-4">
+                <Select value={currentSeason.toString()} onValueChange={(value) => {
+                  setCurrentSeason(parseInt(value))
+                  setCurrentEpisode(1)
+                  const newUrl = `/play/${id}?season=${value}&episode=1`
+                  window.history.replaceState({}, '', newUrl)
+                }}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {content.seasons?.map((season: Season) => (
+                      <SelectItem key={season.seasonNumber} value={season.seasonNumber.toString()}>
+                        Season {season.seasonNumber}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={currentEpisode.toString()} onValueChange={(value) => {
+                  setCurrentEpisode(parseInt(value))
+                  const newUrl = `/play/${id}?season=${currentSeason}&episode=${value}`
+                  window.history.replaceState({}, '', newUrl)
+                }}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {content.seasons?.find((s: Season) => s.seasonNumber === currentSeason)?.episodes.map((episode: Episode) => (
+                      <SelectItem key={episode.episodeNumber} value={episode.episodeNumber.toString()}>
+                        Episode {episode.episodeNumber}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateEpisode('prev')}
+                  disabled={currentSeason === 1 && currentEpisode === 1}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateEpisode('next')}
+                  disabled={
+                    currentSeason === content.seasons?.length &&
+                    currentEpisode === content.seasons?.[content.seasons.length - 1]?.episodes.length
+                  }
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Video Player */}
         {showYouTubePlayer ? (
@@ -233,7 +413,7 @@ export default function PlayPage({ params }: PlayPageProps) {
             <video
               ref={videoRef}
               className="w-full aspect-video bg-black"
-              poster={movie.coverImage}
+              poster={content.coverImage}
               onTimeUpdate={handleTimeUpdate}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
@@ -243,7 +423,7 @@ export default function PlayPage({ params }: PlayPageProps) {
               onLoadedData={() => setIsBuffering(false)}
             >
               <source
-                src={movie.videoUrl}
+                src={videoUrl}
                 type="video/mp4"
               />
               Your browser does not support the video tag.
@@ -300,7 +480,7 @@ export default function PlayPage({ params }: PlayPageProps) {
                     </>
                   )}
                 </Button>
-                <Link href={`/download/${movie.id}`} className="ml-2">
+                <Link href={`/download/${content.id}`} className="ml-2">
                   <Button variant="ghost" size="sm" className="hover:bg-black/50">
                     <Download className="w-5 h-5 mr-2" /> Download Options
                   </Button>
@@ -313,29 +493,38 @@ export default function PlayPage({ params }: PlayPageProps) {
           </div>
         )}
 
-        {/* Movie Info */}
+        {/* Content Info */}
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-2">{movie.title}</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {content.title}
+            {isSeries && currentEpisodeData && ` - S${currentSeason}E${currentEpisode}: ${currentEpisodeData.title}`}
+          </h1>
           <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-            <span>{movie.year}</span>
-            <span>{movie.duration}</span>
-            <span>{movie.rating}</span>
-            {movie.region && <span>Region: {movie.region}</span>}
-            {movie.translator && <span>Translator: {movie.translator}</span>}
+            <span>{content.year}</span>
+            {isSeries ? (
+              currentEpisodeData?.duration && <span>{currentEpisodeData.duration}</span>
+            ) : (
+              content.duration && <span>{content.duration}</span>
+            )}
+            {content.rating && <span>{content.rating}</span>}
+            {content.region && <span>Region: {content.region}</span>}
+            {content.translator && <span>Translator: {content.translator}</span>}
           </div>
-          <p className="text-gray-300">{movie.description}</p>
+          <p className="text-gray-300">
+            {isSeries && currentEpisodeData?.description ? currentEpisodeData.description : content.description}
+          </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            {!showYouTubePlayer && movie.id === "25" && (
+            {!showYouTubePlayer && !isSeries && content.id === "25" && (
               <Button className="bg-red-600 hover:bg-red-700" onClick={() => setShowYouTubePlayer(true)}>
                 <Play className="mr-2 h-4 w-4" /> Watch Full Movie
               </Button>
             )}
 
-            {movie.trailerYouTubeId && (
+            {content.trailerYouTubeId && (
               <Button
                 variant="outline"
-                onClick={() => window.open(`https://www.youtube.com/watch?v=${movie.trailerYouTubeId}`, "_blank")}
+                onClick={() => window.open(`https://www.youtube.com/watch?v=${content.trailerYouTubeId}`, "_blank")}
               >
                 <Film className="mr-2 h-4 w-4" /> Watch on YouTube
               </Button>
@@ -355,6 +544,9 @@ export default function PlayPage({ params }: PlayPageProps) {
             </Button>
           </div>
         </div>
+
+        {/* Comments Section */}
+        {!isSeries && <MovieComments movieId={content.id} movieTitle={content.title} />}
       </main>
 
       {/* Footer */}
