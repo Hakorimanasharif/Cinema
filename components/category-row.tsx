@@ -12,7 +12,7 @@ interface CategoryRowProps {
 }
 
 export default function CategoryRow({ title, category }: CategoryRowProps) {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
   const [items, setItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

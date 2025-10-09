@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { SettingsProvider } from "@/components/settings-context"
+import { DynamicHead } from "@/components/dynamic-head"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <SettingsProvider>
+          <DynamicHead />
           {children}
         </SettingsProvider>
       </body>

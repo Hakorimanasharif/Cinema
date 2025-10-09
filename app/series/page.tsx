@@ -43,7 +43,7 @@ export default function SeriesPage() {
         if (searchTerm) params.append("q", searchTerm)
         if (sortBy) params.append("sort", sortBy)
 
-        const res = await fetch(`http://localhost:5001/api/series?${params}`)
+        const res = await fetch(`https://cinemax-8yem.onrender.com/api/series?${params}`)
         const data = await res.json()
         if (res.ok) {
           setSeries(data)

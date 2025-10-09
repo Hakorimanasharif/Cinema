@@ -53,7 +53,7 @@ export default function SeriesDetailPage() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`http://localhost:5001/api/series/${params.id}`)
+        const res = await fetch(`https://cinemax-8yem.onrender.com/api/series/${params.id}`)
         const data = await res.json()
         if (res.ok) {
           setSeries(data)

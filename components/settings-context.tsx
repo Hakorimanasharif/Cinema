@@ -28,7 +28,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<WebsiteSettings>({})
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
 
   const refreshSettings = async () => {
     try {
