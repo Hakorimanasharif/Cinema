@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use } from "react"
+import { useState, use, useEffect } from "react"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,8 +8,23 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import MovieFilters from "@/components/movie-filters"
 import CategoryFilter from "@/components/category-filter"
-import { getMoviesByTranslator } from "@/lib/data"
 import MovieCard from "@/components/movie-card"
+
+interface Movie {
+  _id: string;
+  title: string;
+  description?: string;
+  year?: number;
+  duration?: string;
+  rating?: string;
+  coverImage?: string;
+  trailerYouTubeId?: string;
+  category?: string;
+  region?: string;
+  translator?: string;
+  videoUrl?: string;
+  views?: number;
+}
 
 interface TranslatorPageProps {
   params: Promise<{
@@ -22,6 +37,10 @@ export default function TranslatorPage({ params }: TranslatorPageProps) {
   const [sortBy, setSortBy] = useState("newest")
   const [region, setRegion] = useState("All")
   const [genre, setGenre] = useState("All")
+  const [movies, setMovies] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
 
   // Format translator name for display (replace hyphens with spaces and capitalize)
   const translatorName = slug
@@ -29,8 +48,26 @@ export default function TranslatorPage({ params }: TranslatorPageProps) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ")
 
-  // Get movies by translator
-  const movies = getMoviesByTranslator(translatorName)
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setIsLoading(true)
+      try {
+        const res = await fetch(`${API_BASE}/api/movies?translator=${encodeURIComponent(translatorName)}`)
+        if (res.ok) {
+          const data = await res.json()
+          setMovies(data.map((m: any) => ({ ...m, id: m._id })))
+        } else {
+          setMovies([])
+        }
+      } catch (error) {
+        console.error('Failed to fetch movies', error)
+        setMovies([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchMovies()
+  }, [translatorName, API_BASE])
 
   return (
     <div className="min-h-screen bg-black text-white">
