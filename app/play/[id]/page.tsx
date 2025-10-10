@@ -75,10 +75,24 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [showYouTubePlayer, setShowYouTubePlayer] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isBuffering, setIsBuffering] = useState(true)
+  const [hasIncremented, setHasIncremented] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
+
+  const updateViews = async () => {
+    if (hasIncremented) return
+    try {
+      const endpoint = isSeries ? `/api/series/${id}/views` : `/api/movies/${id}/views`
+      const res = await fetch(`${API_BASE}${endpoint}`, { method: 'POST' })
+      const data = await res.json()
+      console.log('Views updated:', data.views)
+      setHasIncremented(true)
+    } catch (error) {
+      console.error('Failed to update views:', error)
+    }
+  }
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -209,6 +223,7 @@ export default function PlayPage({ params }: PlayPageProps) {
 
     setCurrentSeason(newSeason)
     setCurrentEpisode(newEpisode)
+    setHasIncremented(false)
 
     // Update URL
     const newUrl = `/play/${id}?season=${newSeason}&episode=${newEpisode}`
@@ -424,7 +439,7 @@ export default function PlayPage({ params }: PlayPageProps) {
               className="w-full aspect-video bg-black"
               poster={content.coverImage}
               onTimeUpdate={handleTimeUpdate}
-              onPlay={() => setIsPlaying(true)}
+              onPlay={() => { setIsPlaying(true); updateViews(); }}
               onPause={() => setIsPlaying(false)}
               controls={false}
               onCanPlay={() => setIsBuffering(false)}
