@@ -5,6 +5,8 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 
 interface TrailerButtonProps {
@@ -14,12 +16,30 @@ interface TrailerButtonProps {
   className?: string
 }
 
+const extractVideoId = (urlOrId: string): string => {
+  if (!urlOrId) return ''
+  
+  // If it's already an ID (11 characters, typical YouTube ID length)
+  if (urlOrId.length === 11) return urlOrId
+  
+  // Extract from watch?v= URL
+  const watchMatch = urlOrId.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+  if (watchMatch) return watchMatch[1]
+  
+  // Extract from embed URL
+  const embedMatch = urlOrId.match(/youtube\.com\/embed\/([^&\n?#]+)/)
+  if (embedMatch) return embedMatch[1]
+  
+  return ''
+}
+
 export default function TrailerButton({
-  videoId,
+  videoId: rawVideoId,
   variant = "outline",
   size = "sm",
   className = "",
 }: TrailerButtonProps) {
+  const videoId = extractVideoId(rawVideoId)
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -28,8 +48,10 @@ export default function TrailerButton({
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-full h-96">
+        <DialogTitle>Trailer</DialogTitle>
+        <DialogDescription>Watch the movie trailer</DialogDescription>
         <iframe
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
           allow="autoplay; encrypted-media"
           allowFullScreen
           className="w-full h-full"

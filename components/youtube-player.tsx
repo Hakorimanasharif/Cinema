@@ -9,7 +9,25 @@ interface YouTubePlayerProps {
   isTrailer?: boolean
 }
 
-export default function YouTubePlayer({ videoId, onClose, isTrailer = true }: YouTubePlayerProps) {
+const extractVideoId = (urlOrId: string): string => {
+  if (!urlOrId) return ''
+  
+  // If it's already an ID (11 characters, typical YouTube ID length)
+  if (urlOrId.length === 11) return urlOrId
+  
+  // Extract from watch?v= URL
+  const watchMatch = urlOrId.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+  if (watchMatch) return watchMatch[1]
+  
+  // Extract from embed URL
+  const embedMatch = urlOrId.match(/youtube\.com\/embed\/([^&\n?#]+)/)
+  if (embedMatch) return embedMatch[1]
+  
+  return ''
+}
+
+export default function YouTubePlayer({ videoId: rawVideoId, onClose, isTrailer = true }: YouTubePlayerProps) {
+  const videoId = extractVideoId(rawVideoId)
   const [isLoading, setIsLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
@@ -74,7 +92,7 @@ export default function YouTubePlayer({ videoId, onClose, isTrailer = true }: Yo
   }
 
   // Determine the appropriate parameters based on whether this is a trailer or full movie
-  const youtubeParams = isTrailer ? `autoplay=1&rel=0` : `autoplay=1&rel=0&controls=0&showinfo=0&modestbranding=1`
+  const youtubeParams = isTrailer ? `autoplay=1&mute=1&rel=0` : `autoplay=1&mute=1&rel=0&controls=0&showinfo=0&modestbranding=1`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { MessageSquare } from "lucide-react"
 import MovieCommentForm from "./movie-comment-form"
 import MovieCommentList, { type Comment } from "./movie-comment-list"
 
@@ -59,8 +60,11 @@ export default function MovieComments({ movieId, movieTitle }: MovieCommentsProp
   }
 
   return (
-    <div className="mt-12 bg-gray-900 rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Comments</h2>
+    <div className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-8 shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 flex items-center">
+        <MessageSquare className="mr-2 h-6 w-6" />
+        Comments
+      </h2>
 
       {/* Comment form */}
       <MovieCommentForm onCommentSubmit={handleCommentSubmit} />

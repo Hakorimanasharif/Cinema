@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, use } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import {
   Play,
@@ -77,8 +78,10 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isBuffering, setIsBuffering] = useState(true)
   const [hasIncremented, setHasIncremented] = useState(false)
+  const [relatedMovies, setRelatedMovies] = useState<any[]>([])
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerContainerRef = useRef<HTMLDivElement>(null)
+  const relatedCarouselRef = useRef<HTMLDivElement>(null)
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
 
@@ -174,6 +177,27 @@ export default function PlayPage({ params }: PlayPageProps) {
       clearTimeout(bufferingTimeout)
     }
   }, [content, isSeries])
+
+  useEffect(() => {
+    if (!content || isSeries) return
+
+    const fetchRelated = async () => {
+      try {
+        const params = new URLSearchParams()
+        if (content.category) params.append("category", content.category)
+        params.append("limit", "10")
+        const res = await fetch(`${API_BASE}/api/movies?${params.toString()}`)
+        const data = await res.json()
+        if (res.ok) {
+          setRelatedMovies(data.filter((m: any) => m._id !== content.id))
+        }
+      } catch (error) {
+        console.error('Failed to fetch related movies:', error)
+      }
+    }
+
+    fetchRelated()
+  }, [content, isSeries, API_BASE])
 
   const getCurrentVideoUrl = () => {
     if (isSeries && content.seasons) {
@@ -327,6 +351,18 @@ export default function PlayPage({ params }: PlayPageProps) {
   const fastForward = () => {
     if (videoRef.current) {
       videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + 10)
+    }
+  }
+
+  const scrollLeft = () => {
+    if (relatedCarouselRef.current) {
+      relatedCarouselRef.current.scrollBy({ left: -300, behavior: 'smooth' })
+    }
+  }
+
+  const scrollRight = () => {
+    if (relatedCarouselRef.current) {
+      relatedCarouselRef.current.scrollBy({ left: 300, behavior: 'smooth' })
     }
   }
 
@@ -579,6 +615,49 @@ export default function PlayPage({ params }: PlayPageProps) {
 
         {/* Comments Section */}
         {!isSeries && <MovieComments movieId={content.id} movieTitle={content.title} />}
+
+        {/* Related Movies */}
+        {!isSeries && relatedMovies.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <h2 className="text-2xl font-bold mb-6">Related Movies</h2>
+            <div className="relative">
+              <button
+                onClick={scrollLeft}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full text-white transition-colors"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <div
+                ref={relatedCarouselRef}
+                className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {relatedMovies.map((movie) => (
+                  <Link key={movie._id} href={`/movie/${movie._id}`}>
+                    <div className="flex-shrink-0 w-40">
+                      <div className="group">
+                        <div className="relative aspect-[2/3] overflow-hidden rounded-md transition-transform duration-300 group-hover:scale-105">
+                          <Image src={movie.coverImage || "/placeholder.svg"} alt={movie.title} fill className="object-cover" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
+                        </div>
+                        <h3 className="mt-2 text-sm font-medium truncate">{movie.title}</h3>
+                        <p className="text-xs text-gray-400">{movie.year}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <button
+                onClick={scrollRight}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full text-white transition-colors"
+                aria-label="Scroll right"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
