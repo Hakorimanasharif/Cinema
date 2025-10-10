@@ -47,9 +47,9 @@ export default function TrailerButton({
           <Film className="mr-2 h-4 w-4" /> Trailer
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-full h-96">
+      <DialogContent className="max-w-4xl w-full h-96" aria-describedby="trailer-description">
         <DialogTitle>Trailer</DialogTitle>
-        <DialogDescription>Watch the movie trailer</DialogDescription>
+        <DialogDescription id="trailer-description">Watch the movie trailer</DialogDescription>
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
           allow="autoplay; encrypted-media"
