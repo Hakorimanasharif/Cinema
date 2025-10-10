@@ -13,6 +13,7 @@ interface MovieCommentsProps {
 export default function MovieComments({ movieId, movieTitle }: MovieCommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
 
   useEffect(() => {
@@ -41,12 +42,16 @@ export default function MovieComments({ movieId, movieTitle }: MovieCommentsProp
         },
         body: JSON.stringify({ text, username }),
       })
-      const newComment = await res.json()
+      const data = await res.json()
       if (res.ok) {
-        setComments([newComment, ...comments])
+        setComments([data, ...comments])
+        setErrorMessage(null)
+      } else {
+        setErrorMessage(data.error || 'Failed to post comment')
       }
     } catch (error) {
       console.error('Failed to post comment:', error)
+      setErrorMessage('Failed to post comment')
     }
   }
 
@@ -68,6 +73,13 @@ export default function MovieComments({ movieId, movieTitle }: MovieCommentsProp
 
       {/* Comment form */}
       <MovieCommentForm onCommentSubmit={handleCommentSubmit} />
+
+      {/* Error message */}
+      {errorMessage && (
+        <div className="mb-4 p-4 bg-red-600/20 border border-red-600 rounded-lg text-red-400">
+          {errorMessage}
+        </div>
+      )}
 
       {/* Comments list */}
       <MovieCommentList comments={comments} />

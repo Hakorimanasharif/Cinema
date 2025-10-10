@@ -52,7 +52,7 @@ export default function MovieFilters({
         const regionsData = await regionsRes.json()
         const translatorsData = await translatorsRes.json()
         const genresData = await genresRes.json()
-        setRegions(["All", ...regionsData])
+        setRegions(["All", ...regionsData.map((r: any) => r.name)])
         setTranslators(["All", ...translatorsData.map((t: any) => t.name)])
         setGenres(["All", ...genresData.map((c: any) => c.name)])
       } catch (error) {

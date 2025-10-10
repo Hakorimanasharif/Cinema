@@ -18,10 +18,12 @@ export default function MovieCommentForm({ onCommentSubmit }: MovieCommentFormPr
   const [username, setUsername] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const hasBadWord = comment.toLowerCase().includes('website')
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!comment.trim() || !username.trim()) return
+    if (!comment.trim() || !username.trim() || hasBadWord) return
 
     setIsSubmitting(true)
 
@@ -72,15 +74,21 @@ export default function MovieCommentForm({ onCommentSubmit }: MovieCommentFormPr
           </div>
         </div>
 
+        {hasBadWord && (
+          <div className="text-red-400 text-sm">
+            Comment contains prohibited content ("website").
+          </div>
+        )}
+
         <div className="flex justify-between items-center pt-2">
           <div className="text-sm text-gray-400 flex items-center gap-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             Join the conversation
           </div>
           
-          <Button 
-            type="submit" 
-            disabled={!comment.trim() || !username.trim() || isSubmitting}
+          <Button
+            type="submit"
+            disabled={!comment.trim() || !username.trim() || isSubmitting || hasBadWord}
             className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-8 py-6 text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:transform-none disabled:hover:shadow-none"
           >
             {isSubmitting ? (

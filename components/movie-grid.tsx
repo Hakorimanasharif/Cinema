@@ -24,6 +24,8 @@ export default function MovieGrid({ category, sortBy = "newest" }: MovieGridProp
         const params = new URLSearchParams()
         if (category === "trending") {
           params.append("sort", "trending")
+        } else if (category === "newest") {
+          params.append("sort", "newest")
         } else if (category) {
           params.append("category", category)
         }
@@ -40,6 +42,7 @@ export default function MovieGrid({ category, sortBy = "newest" }: MovieGridProp
           year: m.year,
           posterImage: m.coverImage,
           trailerYouTubeId: m.trailerYouTubeId,
+          translator: typeof m.translator === 'object' ? m.translator?.name : m.translator,
         }))
         setMovies(mapped)
       } catch (e: any) {

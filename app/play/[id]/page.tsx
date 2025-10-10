@@ -462,14 +462,7 @@ export default function PlayPage({ params }: PlayPageProps) {
             onMouseEnter={() => setShowControls(true)}
             onMouseLeave={() => isPlaying && setShowControls(false)}
           >
-            {isBuffering && (
-              <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20">
-                <div className="text-center">
-                  <LoadingSpinner size="lg" color="primary" />
-                  <p className="mt-4 text-lg">Buffering...</p>
-                </div>
-              </div>
-            )}
+            
 
             <video
               ref={videoRef}
