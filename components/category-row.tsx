@@ -84,7 +84,7 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">{title}</h2>
-        <Link href={category === "series" ? "/series" : category === "animation" || category === "rwandan" ? `/category/${category}` : `/filter/genre/${category.toLowerCase()}`}>
+        <Link href={category === "series" ? "/series" : `/category/${category}`}>
           <Button variant="link" className="text-red-500 hover:text-red-400">
             View All
           </Button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, use } from "react"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,13 +12,13 @@ import { getMoviesByRegion } from "@/lib/data"
 import MovieCard from "@/components/movie-card"
 
 interface RegionPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default function RegionPage({ params }: RegionPageProps) {
-  const { slug } = params
+  const { slug } = use(params)
   const [sortBy, setSortBy] = useState("newest")
   const [translator, setTranslator] = useState("All")
   const [genre, setGenre] = useState("All")

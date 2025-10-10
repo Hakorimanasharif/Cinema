@@ -21,14 +21,20 @@ export default function MovieGrid({ category, sortBy = "newest" }: MovieGridProp
       setIsLoading(true)
       setError(null)
       try {
-        const res = await fetch(`${API_BASE}/api/movies`)
+        const params = new URLSearchParams()
+        if (category === "trending") {
+          params.append("sort", "trending")
+        } else if (category) {
+          params.append("category", category)
+        }
+        if (sortBy !== "newest") {
+          params.append("sort", sortBy)
+        }
+        const url = params.toString() ? `${API_BASE}/api/movies?${params.toString()}` : `${API_BASE}/api/movies`
+        const res = await fetch(url)
         const data = await res.json()
         if (!res.ok) throw new Error(data?.error || "Failed to fetch movies")
-        let filtered = category ? data.filter((m: any) => !category || m.category === category) : data
-        // basic sort handlers
-        if (sortBy === "newest") filtered = filtered.sort((a: any, b: any) => (b.year || 0) - (a.year || 0))
-        if (sortBy === "oldest") filtered = filtered.sort((a: any, b: any) => (a.year || 0) - (b.year || 0))
-        const mapped = filtered.map((m: any) => ({
+        const mapped = data.map((m: any) => ({
           id: m._id,
           title: m.title,
           year: m.year,

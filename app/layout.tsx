@@ -15,11 +15,6 @@ export const metadata: Metadata = {
   verification: {
     google: "google01d1931b39278409",
   },
-  icons: {
-    icon: "https://i.pinimg.com/736x/03/81/12/0381120e8aa289654b67429b9f7165b9.jpg",          // main favicon (place this file in the public folder)
-    shortcut: "https://i.pinimg.com/736x/03/81/12/0381120e8aa289654b67429b9f7165b9.jpg",      // browser shortcut icon
-    apple: "https://i.pinimg.com/736x/03/81/12/0381120e8aa289654b67429b9f7165b9.jpg" // optional for Apple devices
-  },
 }
 
 export default function RootLayout({

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -14,12 +14,13 @@ import MovieCard from "@/components/movie-card"
 import LoadingSpinner from "@/components/loading-spinner"
 
 interface MoviePageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default function MoviePage({ params }: MoviePageProps) {
+  const { id } = use(params)
   const [isLoading, setIsLoading] = useState(false)
   const [movie, setMovie] = useState<any>(null)
   const [relatedMovies, setRelatedMovies] = useState<any[]>([])
@@ -33,7 +34,7 @@ export default function MoviePage({ params }: MoviePageProps) {
       setLoadingMovie(true)
       setError(null)
       try {
-        const res = await fetch(`${API_BASE}/api/movies/${params.id}`)
+        const res = await fetch(`${API_BASE}/api/movies/${id}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data?.error || "Movie not found")
         setMovie({
@@ -76,7 +77,7 @@ export default function MoviePage({ params }: MoviePageProps) {
       }
     }
     loadMovie()
-  }, [params.id, API_BASE])
+  }, [id, API_BASE])
 
   if (loadingMovie) {
     return (

@@ -20,7 +20,8 @@ export function DynamicHead() {
         favicon.rel = 'icon'
         document.head.appendChild(favicon)
       }
-      favicon.href = settings.favicon
+      favicon.href = settings.favicon + '?t=' + Date.now()
+      favicon.sizes = '64x64'
     }
 
     // Update meta description

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, use } from "react"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,13 +12,13 @@ import Footer from "@/components/footer"
 import { useEffect } from "react"
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  const { slug } = params
+  const { slug } = use(params)
   const [sortBy, setSortBy] = useState("newest")
   const [region, setRegion] = useState("All")
   const [translator, setTranslator] = useState("All")

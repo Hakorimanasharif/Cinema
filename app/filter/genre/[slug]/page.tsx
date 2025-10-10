@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,13 +11,13 @@ import CategoryFilter from "@/components/category-filter"
 import MovieCard from "@/components/movie-card"
 
 interface GenrePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default function GenrePage({ params }: GenrePageProps) {
-  const { slug } = params
+  const { slug } = use(params)
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
   const [sortBy, setSortBy] = useState("newest")
   const [region, setRegion] = useState("All")

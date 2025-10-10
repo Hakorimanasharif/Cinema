@@ -73,6 +73,7 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [showControls, setShowControls] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showYouTubePlayer, setShowYouTubePlayer] = useState(false)
+  const [showTrailerPlayer, setShowTrailerPlayer] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isBuffering, setIsBuffering] = useState(true)
   const [hasIncremented, setHasIncremented] = useState(false)
@@ -517,6 +518,13 @@ export default function PlayPage({ params }: PlayPageProps) {
           </div>
         )}
 
+        {/* Trailer Player */}
+        {showTrailerPlayer && (
+          <div className="max-w-7xl mx-auto px-4">
+            <YouTubePlayer videoId={content.trailerYouTubeId} onClose={() => setShowTrailerPlayer(false)} isTrailer={true} />
+          </div>
+        )}
+
         {/* Content Info */}
         <div className="max-w-7xl mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-2">
@@ -548,9 +556,9 @@ export default function PlayPage({ params }: PlayPageProps) {
             {content.trailerYouTubeId && (
               <Button
                 variant="outline"
-                onClick={() => window.open(`https://www.youtube.com/watch?v=${content.trailerYouTubeId}`, "_blank")}
+                onClick={() => setShowTrailerPlayer(true)}
               >
-                <Film className="mr-2 h-4 w-4" /> Watch on YouTube
+                <Film className="mr-2 h-4 w-4" /> Trailer
               </Button>
             )}
 
