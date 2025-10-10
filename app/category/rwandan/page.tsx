@@ -25,7 +25,12 @@ export default function RwandanMoviesPage() {
       setIsLoading(true)
       setError(null)
       try {
-        const res = await fetch(`${API_BASE}/api/movies?region=Rwandan`)
+        const params = new URLSearchParams()
+        if (region !== "All") params.append("region", region)
+        if (translator !== "All") params.append("translator", translator)
+        if (genre !== "All") params.append("category", genre)
+        if (sortBy !== "newest") params.append("sort", sortBy)
+        const res = await fetch(`${API_BASE}/api/movies?${params.toString()}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data?.error || "Failed to fetch movies")
         setMovies(data.map((m: any) => ({
@@ -42,7 +47,7 @@ export default function RwandanMoviesPage() {
       }
     }
     loadMovies()
-  }, [API_BASE])
+  }, [API_BASE, region, translator, genre, sortBy])
 
   return (
     <div className="min-h-screen bg-black text-white">

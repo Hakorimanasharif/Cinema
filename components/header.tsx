@@ -51,9 +51,6 @@ export default function Header() {
             <Link href="/category/rwandan" className="text-sm hover:text-red-500 transition-colors duration-200">
               Rwandan
             </Link>
-            <Link href="/premium" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Premium
-            </Link>
           </nav>
         </div>
 
@@ -115,13 +112,6 @@ export default function Header() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Rwandan
-            </Link>
-            <Link
-              href="/premium"
-              className="text-sm hover:text-red-500 transition-colors duration-200 p-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Premium
             </Link>
             {/* Login removed per request */}
           </nav>
