@@ -1,7 +1,7 @@
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { Play } from "lucide-react"
+import { Play, Mic } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import TrailerButton from "@/components/trailer-button"
 import type { Movie } from "@/lib/data"
@@ -32,6 +32,12 @@ export default function MovieCard({ movie, className = "" }: MovieCardProps) {
       </div>
       <h3 className="mt-2 text-sm font-medium truncate">{movie.title}</h3>
       <p className="text-xs text-gray-400">{movie.year}</p>
+      {movie.translator && (
+        <p className="text-xs text-gray-400 flex items-center gap-1">
+          <Mic className="w-3 h-3" />
+          {movie.translator}
+        </p>
+      )}
     </div>
   )
 }
