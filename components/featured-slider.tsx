@@ -55,7 +55,7 @@ export default function FeaturedSlider() {
         const mapped = data.map((b: any) => ({
           id: b._id,
           title: b.title,
-          description: b.description || b.title,
+          description: b.description || 'Watch now for an amazing experience!',
           coverImage: b.imageUrl,
           videoId: extractVideoId(b.youtubeId || b.trailer || ''),
         }))
@@ -104,14 +104,16 @@ export default function FeaturedSlider() {
             </div>
             
             <div className={`transform transition-all duration-700 delay-500 max-w-2xl ${
-              index === currentSlide 
-                ? "translate-y-0 opacity-100" 
+              index === currentSlide
+                ? "translate-y-0 opacity-100"
                 : "translate-y-10 opacity-0"
             }`}>
-              <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed 
-                          drop-shadow-lg font-light">
-                {movie.description}
-              </p>
+              {movie.description && (
+                <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed
+                            drop-shadow-lg font-light">
+                  {movie.description}
+                </p>
+              )}
             </div>
             
             <div className={`transform transition-all duration-700 delay-700 flex flex-wrap gap-4 justify-center ${
@@ -119,8 +121,8 @@ export default function FeaturedSlider() {
                 ? "translate-y-0 opacity-100" 
                 : "translate-y-10 opacity-0"
             }`}>
-              <Link href={`/movie/${movie.id}`}>
-                <Button size="lg" className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg 
+              <Link href={`/play/${movie.id}`}>
+                <Button size="lg" className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg
                                            transform hover:scale-105 transition-transform duration-300">
                   <Play className="mr-2 h-5 w-5 fill-white" /> Play Now
                 </Button>

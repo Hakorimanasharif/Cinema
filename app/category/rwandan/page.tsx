@@ -5,9 +5,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
 import CategoryFilter from "@/components/category-filter"
 import MovieFilters from "@/components/movie-filters"
-import SearchBar from "@/components/search-bar"
 import WhatsAppButton from "@/components/whatsapp-button"
 
 export default function RwandanMoviesPage() {
@@ -51,40 +52,12 @@ export default function RwandanMoviesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header/Navigation */}
-      <header className="flex items-center justify-between p-4 bg-black/90 border-b border-gray-800">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center">
-            <h1 className="text-xl font-bold text-red-600">Cinemax</h1>
-          </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/tv" className="text-sm hover:text-red-500 transition-colors duration-200">
-              TV
-            </Link>
-            <Link href="/movies" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Movies
-            </Link>
-            <Link href="/category/animation" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Animation
-            </Link>
-            <Link href="/category/rwandan" className="text-sm text-red-500 transition-colors duration-200">
-              Rwandan
-            </Link>
-            <Link href="/sports" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Sports
-            </Link>
-            <Link href="/premium" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Premium
-            </Link>
-          </nav>
-        </div>
-        <div className="flex items-center gap-4">
-          <SearchBar />
-          <Link href="/login" className="text-sm hover:text-red-500 transition-colors duration-200">
-            Login
-          </Link>
-        </div>
-      </header>
+      {/* Header */}
+      <Header />
+      <br />
+      <br />
+      <br />
+      <br />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-6">
@@ -126,14 +99,10 @@ export default function RwandanMoviesPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black/90 border-t border-gray-800 py-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-sm text-gray-400">© 2025 Cinemax. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
 
       {/* WhatsApp Button */}
-      <WhatsAppButton />
+      
     </div>
   )
 }
