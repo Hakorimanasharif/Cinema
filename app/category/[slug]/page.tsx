@@ -23,7 +23,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const [region, setRegion] = useState("All")
   const [translator, setTranslator] = useState("All")
   const [genre, setGenre] = useState("All")
-  const categoryTitle = slug.charAt(0).toUpperCase() + slug.slice(1)
+  const categoryTitle = decodeURIComponent(slug).charAt(0).toUpperCase() + decodeURIComponent(slug).slice(1)
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -48,7 +48,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
         <CategoryFilter onCategoryChange={() => {}} onSortChange={setSortBy} hideCategories />
 
-        <MovieGrid category={slug} sortBy={sortBy} />
+        <MovieGrid category={decodeURIComponent(slug)} sortBy={sortBy} />
       </main>
 
       {/* Footer */}
