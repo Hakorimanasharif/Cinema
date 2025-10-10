@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, Play, Info } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import TrailerButton from "@/components/trailer-button"
 
 export default function FeaturedSlider() {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
@@ -36,6 +37,12 @@ export default function FeaturedSlider() {
     return () => clearInterval(interval)
   }, [currentSlide])
 
+  // Function to extract video ID from YouTube URL
+  const extractVideoId = (url: string) => {
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+    return match ? match[1] : url // If not a URL, assume it's already videoId
+  }
+
   // Load active banners from backend
   useEffect(() => {
     const load = async () => {
@@ -48,8 +55,9 @@ export default function FeaturedSlider() {
         const mapped = data.map((b: any) => ({
           id: b._id,
           title: b.title,
-          description: b.subtitle || b.title,
+          description: b.description || b.title,
           coverImage: b.imageUrl,
+          videoId: extractVideoId(b.youtubeId || b.trailer || ''),
         }))
         setBanners(mapped)
       } catch (e: any) {
@@ -66,11 +74,13 @@ export default function FeaturedSlider() {
       {(isLoading ? [] : banners).map((movie, index) => (
         <div
           key={movie.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? "opacity-100" : "opacity-0 pointer-events-none"
+          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+            index === currentSlide 
+              ? "opacity-100 transform translate-x-0" 
+              : "opacity-0 pointer-events-none transform translate-x-full"
           }`}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 z-10" />
           <Image
             src={movie.coverImage || ""}
             alt={movie.title}
@@ -78,49 +88,78 @@ export default function FeaturedSlider() {
             className="object-cover"
             priority
           />
-          <div className="absolute bottom-0 left-0 right-0 p-8 z-20 max-w-4xl">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">NEW</span>
+          
+          {/* Centered Content with Animations */}
+          <div className="absolute inset-0 flex flex-col justify-center items-center text-center z-20 px-8">
+            <div className={`transform transition-all duration-700 delay-300 ${
+              index === currentSlide 
+                ? "translate-y-0 opacity-100" 
+                : "translate-y-10 opacity-0"
+            }`}>
+              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black mb-4 uppercase tracking-tight 
+                           bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent
+                           drop-shadow-2xl font-['Bebas_Neue']">
+                {movie.title}
+              </h2>
             </div>
-            <h2 className="text-4xl md:text-6xl font-bold mb-2">{movie.title}</h2>
-            <p className="text-sm md:text-base text-gray-300 mb-6 max-w-2xl line-clamp-3">{movie.description}</p>
-            <div className="flex flex-wrap gap-4">
+            
+            <div className={`transform transition-all duration-700 delay-500 max-w-2xl ${
+              index === currentSlide 
+                ? "translate-y-0 opacity-100" 
+                : "translate-y-10 opacity-0"
+            }`}>
+              <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed 
+                          drop-shadow-lg font-light">
+                {movie.description}
+              </p>
+            </div>
+            
+            <div className={`transform transition-all duration-700 delay-700 flex flex-wrap gap-4 justify-center ${
+              index === currentSlide 
+                ? "translate-y-0 opacity-100" 
+                : "translate-y-10 opacity-0"
+            }`}>
               <Link href={`/movie/${movie.id}`}>
-                <Button size="lg" className="bg-red-600 hover:bg-red-700">
+                <Button size="lg" className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg 
+                                           transform hover:scale-105 transition-transform duration-300">
                   <Play className="mr-2 h-5 w-5 fill-white" /> Play Now
                 </Button>
               </Link>
-              <Link href={`/movie/${movie.id}`}>
-                <Button variant="outline" size="lg">
-                  <Info className="mr-2 h-5 w-5" /> More Info
-                </Button>
-              </Link>
+              {movie.videoId && <TrailerButton videoId={movie.videoId} />}
             </div>
           </div>
         </div>
       ))}
 
+      {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/50 p-2 rounded-full hover:bg-black/70"
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 bg-black/50 p-3 rounded-full 
+                   hover:bg-black/70 transition-all duration-300 hover:scale-110"
         aria-label="Previous slide"
       >
-        <ChevronLeft size={24} />
+        <ChevronLeft size={28} />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-black/50 p-2 rounded-full hover:bg-black/70"
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 bg-black/50 p-3 rounded-full 
+                   hover:bg-black/70 transition-all duration-300 hover:scale-110"
         aria-label="Next slide"
       >
-        <ChevronRight size={24} />
+        <ChevronRight size={28} />
       </button>
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+      {/* Slide Indicators */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
         {banners.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full ${index === currentSlide ? "bg-red-600" : "bg-white/50"}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === currentSlide 
+                ? "bg-red-600 scale-125" 
+                : "bg-white/50 hover:bg-white/70"
+            }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
@@ -128,4 +167,3 @@ export default function FeaturedSlider() {
     </div>
   )
 }
-

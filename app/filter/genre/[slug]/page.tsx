@@ -34,7 +34,7 @@ export default function GenrePage({ params }: GenrePageProps) {
       setIsLoading(true)
       setError(null)
       try {
-        const params = new URLSearchParams({ category: genreName })
+        const params = new URLSearchParams({ category: slug })
         if (region !== "All") params.append("region", region)
         if (translator !== "All") params.append("translator", translator)
         if (sortBy !== "newest") params.append("sort", sortBy)

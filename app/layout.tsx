@@ -5,17 +5,9 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { SettingsProvider } from "@/components/settings-context"
 import { DynamicHead } from "@/components/dynamic-head"
+import ScrollToTopButton from "@/components/scroll-to-top-button"
 
 const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "Cinemax - Stream Movies, TV Shows & Sports",
-  description: "Cinemax is your ultimate online streaming platform where you can watch the latest movies, trending TV shows, and thrilling snlive sports — all in one place. Enjoy high-quality entertainment with smooth playback, agasobanuye (translated/subtitled) versions for better understanding, and exclusive access to both local and international content. Whether you love action, romance, comedy, drama, or live matches, Cinemax gives you the freedom to watch anytime, anywhere, and on any device. Experience cinema at its best — beautifully organized, fast, and made for true movie lovers.",
-
-  verification: {
-    google: "google01d1931b39278409",
-  },
-}
 
 export default function RootLayout({
   children,
@@ -33,6 +25,7 @@ export default function RootLayout({
         <SettingsProvider>
           <DynamicHead />
           {children}
+          <ScrollToTopButton />
         </SettingsProvider>
       </body>
     </html>
