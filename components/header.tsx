@@ -34,7 +34,7 @@ export default function Header() {
     >
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center" onClick={() => window.location.href = "/"}>
             {settings.logo && (
               <img src={settings.logo} alt="Logo" className="h-16 w-auto mr-2" />
             )}
