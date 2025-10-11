@@ -155,6 +155,9 @@ export default function PlayPage({ params }: PlayPageProps) {
   useEffect(() => {
     if (!content) return
 
+    // Increment views when content loads
+    updateViews()
+
     // Check if this is Fast X (ID 25) and automatically show YouTube player
     if (!isSeries && content.id === "25") {
       setShowYouTubePlayer(true)
@@ -478,7 +481,7 @@ export default function PlayPage({ params }: PlayPageProps) {
               className="w-full aspect-video bg-black"
               poster={content.coverImage}
               onTimeUpdate={handleTimeUpdate}
-              onPlay={() => { setIsPlaying(true); updateViews(); }}
+              onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               controls={false}
               onCanPlay={() => setIsBuffering(false)}
