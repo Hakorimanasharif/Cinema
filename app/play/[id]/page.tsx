@@ -160,6 +160,15 @@ export default function PlayPage({ params }: PlayPageProps) {
       setShowYouTubePlayer(true)
     }
 
+    // Check if video URL is an external link and open it directly
+    const videoUrl = getCurrentVideoUrl()
+    if (videoUrl && (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) && !videoUrl.includes(window.location.hostname)) {
+      window.open(videoUrl, '_blank')
+      // Redirect back to movie page
+      window.location.href = isSeries ? `/series/${content._id}` : `/movie/${content.id}`
+      return
+    }
+
     // Set up fullscreen change event listener
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)

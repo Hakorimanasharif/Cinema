@@ -108,12 +108,10 @@ export default function FeaturedSlider() {
                 ? "translate-y-0 opacity-100"
                 : "translate-y-10 opacity-0"
             }`}>
-              {movie.description && (
-                <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed
-                            drop-shadow-lg font-light">
-                  {movie.description}
-                </p>
-              )}
+              <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed
+                          drop-shadow-lg font-light">
+                {movie.description}
+              </p>
             </div>
             
             <div className={`transform transition-all duration-700 delay-700 flex flex-wrap gap-4 justify-center ${
