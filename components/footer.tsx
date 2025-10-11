@@ -13,17 +13,17 @@ export default function Footer() {
             <h3 className="font-bold mb-4">TV</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/tv" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
+                <a href="/series" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
                   Popular Shows
                 </a>
               </li>
               <li>
-                <a href="/tv" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
+                <a href="/series" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
                   New Episodes
                 </a>
               </li>
               <li>
-                <a href="/tv" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
+                <a href="/series" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
                   TV Schedule
                 </a>
               </li>
@@ -38,12 +38,12 @@ export default function Footer() {
             <h3 className="font-bold mb-4">Movies</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/movies" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
+                <a href="/movie" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
                   Popular Movies
                 </a>
               </li>
               <li>
-                <a href="/movies" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
+                <a href="/movie" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
                   New Releases
                 </a>
               </li>
@@ -115,9 +115,9 @@ export default function Footer() {
 
         </div>
 
-        <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-400">© {new Date().getFullYear()} {settings.siteName || "Cinemax"}. All rights reserved.</p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
+        <div className="pt-8 border-t border-gray-800 text-center">
+          <p className="text-sm text-gray-400 mb-4">© {new Date().getFullYear()} {settings.siteName || "Cinemax"}. All rights reserved.</p>
+          <div className="flex justify-center space-x-4">
             <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200">
               <Facebook className="h-5 w-5" />
             </a>

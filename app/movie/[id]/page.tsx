@@ -94,7 +94,7 @@ export default function MoviePage({ params }: MoviePageProps) {
   const handleDownload = () => {
     if (!movie.videoUrl) return
     setIsLoading(true)
-  
+
     // Simulate download delay
     setTimeout(() => {
       const link = document.createElement("a")
@@ -103,9 +103,32 @@ export default function MoviePage({ params }: MoviePageProps) {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-  
+
       setIsLoading(false)
     }, 1500)
+  }
+
+  const handleShare = async () => {
+    const url = window.location.href
+    const title = `Watch ${movie.title} on Cinemax`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          url,
+        })
+      } catch (error) {
+        console.error('Error sharing:', error)
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!')
+      }).catch(() => {
+        alert('Failed to copy link')
+      })
+    }
   }
   return (
     <div className="min-h-screen bg-black text-white">
@@ -168,22 +191,11 @@ export default function MoviePage({ params }: MoviePageProps) {
                     <Download className="mr-2 h-4 w-4" /> Download Options
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full" onClick={handleDownload} disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <LoadingSpinner size="sm" color="primary" className="mr-2" />
-                      Downloading...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="mr-2 h-4 w-4" /> Quick Download
-                    </>
-                  )}
-                </Button>
+
                 <Button variant="outline" className="w-full">
                   <Plus className="mr-2 h-4 w-4" /> Add to List
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleShare}>
                   <Share2 className="mr-2 h-4 w-4" /> Share
                 </Button>
               </div>
@@ -196,10 +208,7 @@ export default function MoviePage({ params }: MoviePageProps) {
                 <p className="text-gray-300">{movie.cast.join(", ")}</p>
               </div>
 
-              <div className="mb-6">
-                <h2 className="text-xl font-bold mb-2">Director</h2>
-                <p className="text-gray-300">{movie.director}</p>
-              </div>
+
 
               <div>
                 <h2 className="text-xl font-bold mb-2">Genres</h2>

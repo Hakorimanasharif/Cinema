@@ -65,7 +65,7 @@ export default function MovieComments({ movieId, movieTitle }: MovieCommentsProp
   }
 
   return (
-    <div className="mt-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-8 shadow-lg">
+    <div className="mt-12 max-w-2xl mx-auto bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-8 shadow-lg border border-gray-700">
       <h2 className="text-2xl font-bold mb-6 flex items-center">
         <MessageSquare className="mr-2 h-6 w-6" />
         Comments
