@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Play, Search, Filter, Star, Calendar, Eye } from "lucide-react"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
 
 interface Series {
   _id: string
@@ -66,6 +68,8 @@ export default function SeriesPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
+
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-16">
         <div className="container mx-auto px-4">
@@ -203,6 +207,8 @@ export default function SeriesPage() {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   )
 }

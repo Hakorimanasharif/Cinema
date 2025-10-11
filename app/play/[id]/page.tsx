@@ -75,8 +75,10 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showYouTubePlayer, setShowYouTubePlayer] = useState(false)
   const [showTrailerPlayer, setShowTrailerPlayer] = useState(false)
+  const [viewMode, setViewMode] = useState<'trailer' | 'player'>('trailer')
   const [isLoading, setIsLoading] = useState(false)
   const [isBuffering, setIsBuffering] = useState(true)
+  const [userRating, setUserRating] = useState(0)
   const [hasIncremented, setHasIncremented] = useState(false)
   const [relatedMovies, setRelatedMovies] = useState<any[]>([])
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -92,6 +94,7 @@ export default function PlayPage({ params }: PlayPageProps) {
       const res = await fetch(`${API_BASE}${endpoint}`, { method: 'POST' })
       const data = await res.json()
       console.log('Views updated:', data.views)
+      setContent((prev: any) => ({ ...prev, views: data.views }))
       setHasIncremented(true)
     } catch (error) {
       console.error('Failed to update views:', error)
@@ -134,6 +137,8 @@ export default function PlayPage({ params }: PlayPageProps) {
             region: movieData.region,
             translator: movieData.translator,
             videoUrl: movieData.videoUrl,
+            downloadUrl: movieData.downloadUrl,
+            views: movieData.views,
           })
           setIsSeries(false)
         } else {
@@ -157,6 +162,13 @@ export default function PlayPage({ params }: PlayPageProps) {
 
     // Increment views when content loads
     updateViews()
+
+    // Set view mode
+    if (!isSeries) {
+      setViewMode('trailer')
+    } else {
+      setViewMode('player')
+    }
 
     // Check if this is Fast X (ID 25) and automatically show YouTube player
     if (!isSeries && content.id === "25") {
@@ -210,6 +222,17 @@ export default function PlayPage({ params }: PlayPageProps) {
 
     fetchRelated()
   }, [content, isSeries, API_BASE])
+
+  const getCurrentDownloadUrl = () => {
+    if (isSeries && content.seasons) {
+      const season = content.seasons.find((s: Season) => s.seasonNumber === currentSeason)
+      if (season) {
+        const episode = season.episodes.find((e: Episode) => e.episodeNumber === currentEpisode)
+        return episode?.downloadUrl
+      }
+    }
+    return content?.downloadUrl
+  }
 
   const getCurrentVideoUrl = () => {
     if (isSeries && content.seasons) {
@@ -315,8 +338,8 @@ export default function PlayPage({ params }: PlayPageProps) {
   }
 
   const handleDownload = async () => {
-    const videoUrl = getCurrentVideoUrl()
-    if (!videoUrl) return
+    const downloadUrl = getCurrentDownloadUrl() || getCurrentVideoUrl()
+    if (!downloadUrl) return
     setIsLoading(true)
 
     try {
@@ -328,18 +351,26 @@ export default function PlayPage({ params }: PlayPageProps) {
       console.error("Failed to track download", error)
     }
 
-    // Simulate download delay
-    setTimeout(() => {
+    try {
+      const response = await fetch(downloadUrl)
+      if (!response.ok) throw new Error('Failed to fetch file')
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
-      link.href = videoUrl
+      link.href = url
       const title = isSeries ? `${content.title} S${currentSeason}E${currentEpisode}` : content.title
       link.download = `${title.replace(/\s+/g, "_")}.mp4`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Download failed:", error)
+      // Fallback to direct link
+      window.open(downloadUrl, '_blank')
+    } finally {
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   const toggleFullscreen = () => {
@@ -375,6 +406,24 @@ export default function PlayPage({ params }: PlayPageProps) {
   const scrollRight = () => {
     if (relatedCarouselRef.current) {
       relatedCarouselRef.current.scrollBy({ left: 300, behavior: 'smooth' })
+    }
+  }
+
+  const handleRating = async (rating: number) => {
+    if (!content) return
+    try {
+      const endpoint = isSeries ? `/api/series/${id}/rate` : `/api/movies/${id}/rate`
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating })
+      })
+      if (res.ok) {
+        setUserRating(rating)
+        // Optionally update the content rating
+      }
+    } catch (error) {
+      console.error('Failed to submit rating:', error)
     }
   }
 
@@ -466,6 +515,70 @@ export default function PlayPage({ params }: PlayPageProps) {
         {showYouTubePlayer ? (
           <div className="max-w-7xl mx-auto px-4">
             <YouTubePlayer videoId="tbzb8cNfeeY" onClose={() => setShowYouTubePlayer(false)} isTrailer={false} />
+          </div>
+        ) : viewMode === 'trailer' && !isSeries ? (
+          <div className="max-w-7xl mx-auto px-4">
+            {/* Large Trailer */}
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-6">
+              {content.trailerYouTubeId ? (
+                <YouTubePlayer videoId={content.trailerYouTubeId} onClose={() => {}} isTrailer={true} />
+              ) : (
+                <>
+                  <Image
+                    src={content.coverImage || "/placeholder.svg"}
+                    alt={content.title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <p className="text-white text-xl text-center">No Trailer Available</p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Hero Section */}
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold">{content.title}</h1>
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <span>{content.year}</span>
+                {content.duration && <span>{content.duration}</span>}
+                {content.rating && <span>{content.rating}</span>}
+                {content.region && <span>{content.region}</span>}
+                {content.translator && <span>{content.translator}</span>}
+                <span>{content.views || 0} Views</span>
+              </div>
+              {content.description && <p className="text-gray-300">{content.description}</p>}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <Button
+                className="flex-1 bg-red-600 hover:bg-red-700 py-4 text-lg font-semibold"
+                onClick={() => setViewMode('player')}
+              >
+                <Play className="mr-2 h-5 w-5" />
+                Watch Full Movie
+              </Button>
+              <Button
+                className="flex-1 py-4 text-lg"
+                variant="outline"
+                onClick={handleDownload}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner size="sm" color="primary" className="mr-2" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-5 w-5" />
+                    Download Movie
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         ) : (
           <div
@@ -566,57 +679,73 @@ export default function PlayPage({ params }: PlayPageProps) {
           </div>
         )}
 
-        {/* Content Info */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-2">
-            {content.title}
-            {isSeries && currentEpisodeData && ` - S${currentSeason}E${currentEpisode}: ${currentEpisodeData.title}`}
-          </h1>
-          <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-            <span>{content.year}</span>
-            {isSeries ? (
-              currentEpisodeData?.duration && <span>{currentEpisodeData.duration}</span>
-            ) : (
-              content.duration && <span>{content.duration}</span>
-            )}
-            {content.rating && <span>{content.rating}</span>}
-            {content.region && <span>Region: {content.region}</span>}
-            {content.translator && <span>Translator: {content.translator}</span>}
-          </div>
-          <p className="text-gray-300">
-            {isSeries && currentEpisodeData?.description ? currentEpisodeData.description : content.description}
-          </p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            {!showYouTubePlayer && !isSeries && content.id === "25" && (
-              <Button className="bg-red-600 hover:bg-red-700" onClick={() => setShowYouTubePlayer(true)}>
-                <Play className="mr-2 h-4 w-4" /> Watch Full Movie
-              </Button>
-            )}
-
-            {content.trailerYouTubeId && (
-              <Button
-                variant="outline"
-                onClick={() => setShowTrailerPlayer(true)}
-              >
-                <Film className="mr-2 h-4 w-4" /> Trailer
-              </Button>
-            )}
-
-            <Button variant="outline" onClick={handleDownload} disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <LoadingSpinner size="sm" color="primary" className="mr-2" />
-                  Downloading...
-                </>
+        {/* Content Info for Player View */}
+        {viewMode === 'player' && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-2">
+              {content.title}
+              {isSeries && currentEpisodeData && ` - S${currentSeason}E${currentEpisode}: ${currentEpisodeData.title}`}
+            </h1>
+            <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+              <span>{content.year}</span>
+              {isSeries ? (
+                currentEpisodeData?.duration && <span>{currentEpisodeData.duration}</span>
               ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" /> Download
-                </>
+                content.duration && <span>{content.duration}</span>
               )}
-            </Button>
+              {content.rating && <span>{content.rating}</span>}
+              {content.region && <span>Region: {content.region}</span>}
+              {content.translator && <span>Translator: {content.translator}</span>}
+              <span>{content.views || 0} Views</span>
+            </div>
+            <p className="text-gray-300">
+              {isSeries && currentEpisodeData?.description ? currentEpisodeData.description : content.description}
+            </p>
+
+            {/* Rating Section */}
+            <div className="mt-6">
+              <h4 className="text-lg font-semibold mb-2">Rate this {isSeries ? 'episode' : 'movie'}</h4>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleRating(star)}
+                    className={`text-2xl ${star <= userRating ? 'text-yellow-400' : 'text-gray-400'} hover:text-yellow-400 transition-colors`}
+                  >
+                    ★
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-gray-400">
+                  {userRating > 0 ? `You rated: ${userRating}/5` : 'Click to rate'}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {content.trailerYouTubeId && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTrailerPlayer(true)}
+                >
+                  <Film className="mr-2 h-4 w-4" /> Trailer
+                </Button>
+              )}
+
+              <Button variant="outline" onClick={handleDownload} disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner size="sm" color="primary" className="mr-2" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" /> Download
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Comments Section */}
         {!isSeries && <MovieComments movieId={content.id} movieTitle={content.title} />}
