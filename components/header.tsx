@@ -42,16 +42,16 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/tv" className="text-sm hover:text-red-500 transition-colors duration-200">
+            <Link href="/tv" className={`text-sm hover:text-red-500 transition-colors duration-200 ${pathname === '/tv' ? 'text-red-500' : ''}`}>
               TV
             </Link>
-            <Link href="/movies" className="text-sm hover:text-red-500 transition-colors duration-200">
+            <Link href="/movies" className={`text-sm hover:text-red-500 transition-colors duration-200 ${pathname === '/movies' ? 'text-red-500' : ''}`}>
               Movies
             </Link>
-            <Link href="/category/animation" className="text-sm hover:text-red-500 transition-colors duration-200">
+            <Link href="/category/animation" className={`text-sm hover:text-red-500 transition-colors duration-200 ${pathname === '/category/animation' ? 'text-red-500' : ''}`}>
               Animation
             </Link>
-            <Link href="/category/rwandan" className="text-sm hover:text-red-500 transition-colors duration-200">
+            <Link href="/category/rwandan" className={`text-sm hover:text-red-500 transition-colors duration-200 ${pathname === '/category/rwandan' ? 'text-red-500' : ''}`}>
               Rwandan
             </Link>
           </nav>

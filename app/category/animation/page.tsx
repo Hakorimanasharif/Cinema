@@ -9,6 +9,7 @@ import CategoryFilter from "@/components/category-filter"
 import MovieFilters from "@/components/movie-filters"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
+import MovieCard from "@/components/movie-card"
 
 export default function AnimationPage() {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
@@ -40,6 +41,7 @@ export default function AnimationPage() {
           year: m.year,
           posterImage: m.coverImage,
           trailerYouTubeId: m.trailerYouTubeId,
+          translator: m.translator,
         })))
       } catch (e: any) {
         setError(e?.message || "Failed to load movies")
@@ -97,14 +99,7 @@ export default function AnimationPage() {
                 {isLoading ? (
                   <div className="animate-pulse h-[270px] bg-gray-800 rounded-md" />
                 ) : (
-                  <Link href={`/movie/${movie.id}`} className="group">
-                    <div className="relative aspect-[2/3] overflow-hidden rounded-md transition-transform duration-300 group-hover:scale-105">
-                      <Image src={movie.posterImage || "/placeholder.svg"} alt={movie.title} fill className="object-cover" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
-                    </div>
-                    <h3 className="mt-2 text-sm font-medium truncate">{movie.title}</h3>
-                    <p className="text-xs text-gray-400">{movie.year}</p>
-                  </Link>
+                  <MovieCard movie={movie} />
                 )}
               </div>
             ))}
