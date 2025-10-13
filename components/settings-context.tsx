@@ -51,6 +51,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     refreshSettings()
   }, [])
 
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshSettings()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
   return (
     <SettingsContext.Provider value={{ settings, refreshSettings }}>
       {children}
