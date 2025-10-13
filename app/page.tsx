@@ -69,7 +69,8 @@ export default function Home() {
         <section className="px-4 py-4">
           <CategoryRow title="Trending Now" category="trending" />
           <CategoryRow title="New Releases" category="newest" />
-          <CategoryRow title="TV Series" category="series" />
+          
+          
           {categories.map((cat) => (
             <CategoryRow key={cat._id} title={`${cat.name} Movies`} category={cat.name} />
           ))}

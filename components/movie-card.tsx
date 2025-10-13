@@ -41,4 +41,3 @@ export default function MovieCard({ movie, className = "" }: MovieCardProps) {
     </div>
   )
 }
-

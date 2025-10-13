@@ -9,9 +9,13 @@ import MovieCard from "@/components/movie-card"
 interface CategoryRowProps {
   title: string
   category: string
+  type?: "movie" | "series"
+  region?: string
+  translator?: string
+  genre?: string
 }
 
-export default function CategoryRow({ title, category }: CategoryRowProps) {
+export default function CategoryRow({ title, category, type = "movie", region, translator, genre }: CategoryRowProps) {
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
   const [items, setItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -22,18 +26,25 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
       setIsLoading(true)
       setError(null)
       try {
-        let url = `${API_BASE}/api/movies`
+        let url = `${API_BASE}/api/${type === 'series' ? 'series' : 'movies'}`
         const params = new URLSearchParams()
-        if (category === "series") {
-          url = `${API_BASE}/api/series`
-        } else if (category === "trending") {
+        if (category === "trending" || category === "popular") {
           params.append("sort", "trending")
-        } else if (category === "newest") {
+        } else if (category === "newest" || category === "new") {
           params.append("sort", "newest")
         } else if (category) {
           params.append("category", category)
         }
-        if (params.toString() && category !== "series") {
+        if (region && region !== "All") {
+          params.append("region", region)
+        }
+        if (translator && translator !== "All") {
+          params.append("translator", translator)
+        }
+        if (genre && genre !== "All") {
+          params.append("category", genre)
+        }
+        if (params.toString()) {
           url += `?${params.toString()}`
         }
         const res = await fetch(url)
@@ -54,7 +65,7 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
       }
     }
     load()
-  }, [API_BASE, category])
+  }, [API_BASE, category, type, region, translator, genre])
 
   const rowRef = useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
@@ -84,7 +95,7 @@ export default function CategoryRow({ title, category }: CategoryRowProps) {
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">{title}</h2>
-        <Link href={category === "series" ? "/series" : `/category/${category}`}>
+        <Link href={type === "series" ? "/series" : `/category/${category}`}>
           <Button variant="link" className="text-red-500 hover:text-red-400">
             View All
           </Button>

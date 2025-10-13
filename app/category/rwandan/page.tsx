@@ -54,47 +54,62 @@ export default function RwandanMoviesPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <Header />
-      <br />
-      <br />
-      <br />
-      <br />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="p-0 h-auto">
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Home
-            </Button>
-          </Link>
-          <span className="text-gray-500">/</span>
-          <span className="text-gray-300">Rwandan Movies</span>
-        </div>
-
-        <h1 className="text-3xl font-bold mb-6">Rwandan Movies</h1>
-
-        <MovieFilters onRegionChange={setRegion} onTranslatorChange={setTranslator} onGenreChange={setGenre} />
-
-        <CategoryFilter onCategoryChange={() => {}} onSortChange={setSortBy} hideCategories />
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {(isLoading ? Array.from({ length: 12 }) : movies).map((movie: any, idx: number) => (
-            <div key={movie?.id || idx}>
-              {isLoading ? (
-                <div className="animate-pulse h-[270px] bg-gray-800 rounded-md" />
-              ) : (
-                <Link href={`/movie/${movie.id}`} className="group">
-                  <div className="relative aspect-[2/3] overflow-hidden rounded-md transition-transform duration-300 group-hover:scale-105">
-                    <Image src={movie.posterImage || "/placeholder.svg"} alt={movie.title} fill className="object-cover" />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
-                  </div>
-                  <h3 className="mt-2 text-sm font-medium truncate">{movie.title}</h3>
-                  <p className="text-xs text-gray-400">{movie.year}</p>
-                </Link>
-              )}
+      <main className="pt-16">
+        {/* Hero Banner */}
+        <section className="relative h-[400px]">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10" />
+          <Image src="https://i.pinimg.com/736x/02/bc/a6/02bca64a6ca17639d41a0623ce529e1a.jpg" alt="Rwandan Movies" fill className="object-cover" priority />
+          <div className="absolute bottom-0 left-0 right-0 p-8 z-20 max-w-4xl">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">Rwandan Movies</h1>
+            <p className="text-sm md:text-base text-gray-300 mb-6 max-w-2xl">
+              Discover the rich cinematic heritage of Rwanda. From local productions to international collaborations, explore our collection of Rwandan films.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/category/rwandan">
+                <Button size="lg" className="bg-red-600 hover:bg-red-700">
+                  Browse Rwandan Movies
+                </Button>
+              </Link>
             </div>
-          ))}
+          </div>
+        </section>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="p-0 h-auto">
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Home
+              </Button>
+            </Link>
+            <span className="text-gray-500">/</span>
+            <span className="text-gray-300">Rwandan Movies</span>
+          </div>
+
+          <MovieFilters onRegionChange={setRegion} onTranslatorChange={setTranslator} onGenreChange={setGenre} />
+
+          <CategoryFilter onCategoryChange={() => {}} onSortChange={setSortBy} hideCategories />
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {(isLoading ? Array.from({ length: 12 }) : movies).map((movie: any, idx: number) => (
+              <div key={movie?.id || idx}>
+                {isLoading ? (
+                  <div className="animate-pulse h-[270px] bg-gray-800 rounded-md" />
+                ) : (
+                  <Link href={`/movie/${movie.id}`} className="group">
+                    <div className="relative aspect-[2/3] overflow-hidden rounded-md transition-transform duration-300 group-hover:scale-105">
+                      <Image src={movie.posterImage || "/placeholder.svg"} alt={movie.title} fill className="object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
+                    </div>
+                    <h3 className="mt-2 text-sm font-medium truncate">{movie.title}</h3>
+                    <p className="text-xs text-gray-400">{movie.year}</p>
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
 
@@ -102,8 +117,7 @@ export default function RwandanMoviesPage() {
       <Footer />
 
       {/* WhatsApp Button */}
-      
+
     </div>
   )
 }
-

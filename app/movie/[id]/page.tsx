@@ -244,7 +244,7 @@ export default function MoviePage({ params }: MoviePageProps) {
           </div>
 
           {/* Comments Section */}
-          <MovieComments movieId={movie.id} movieTitle={movie.title} />
+          <MovieComments movieId={movie.id} movieTitle={movie.title} moviePoster={movie.coverImage} />
 
           {/* Related Movies */}
           <div className="mt-12">
@@ -263,4 +263,3 @@ export default function MoviePage({ params }: MoviePageProps) {
     </div>
   )
 }
-

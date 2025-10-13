@@ -13,6 +13,7 @@ export default function FeaturedSlider() {
   const [banners, setBanners] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string>("/placeholder-logo.svg")
 
   const nextSlide = () => {
     setCurrentSlide((prev) => {
@@ -43,16 +44,17 @@ export default function FeaturedSlider() {
     return match ? match[1] : url
   }
 
-  // Load active banners from backend
+  // Load active banners and logo from backend
   useEffect(() => {
     const load = async () => {
       setIsLoading(true)
       setError(null)
       try {
-        const res = await fetch(`${API_BASE}/api/banners`)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data?.error || "Failed to fetch banners")
-        const mapped = data.map((b: any) => ({
+        // Load banners
+        const bannerRes = await fetch(`${API_BASE}/api/banners`)
+        const bannerData = await bannerRes.json()
+        if (!bannerRes.ok) throw new Error(bannerData?.error || "Failed to fetch banners")
+        const mapped = bannerData.map((b: any) => ({
           id: b._id,
           title: b.title,
           description: b.description || 'Watch now for an amazing experience!',
@@ -64,6 +66,13 @@ export default function FeaturedSlider() {
           genre: b.genre || ["Action", "Adventure"]
         }))
         setBanners(mapped)
+
+        // Load logo from settings
+        const settingsRes = await fetch(`${API_BASE}/api/settings`)
+        const settingsData = await settingsRes.json()
+        if (settingsRes.ok && settingsData.logo) {
+          setLogoUrl(settingsData.logo)
+        }
       } catch (e: any) {
         setError(e?.message || "Failed to load banners")
       } finally {
@@ -239,7 +248,17 @@ export default function FeaturedSlider() {
       {/* Loading State */}
       {isLoading && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="text-white text-xl">Loading featured content...</div>
+          <div className="flex flex-col items-center gap-4">
+            <Image
+              src="https://res.cloudinary.com/dkmdeqbof/image/upload/v1760085572/movies/ykskrkwnkmqqbbz4eqbg.png"
+              alt="Website Logo"
+              width={120}
+              height={120}
+              className="animate-pulse"
+              onError={() => setLogoUrl("/placeholder-logo.svg")}
+            />
+            <div className="text-white text-xl">Agasobanye +</div>
+          </div>
         </div>
       )}
 

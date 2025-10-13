@@ -111,4 +111,3 @@ export default function GenrePage({ params }: GenrePageProps) {
     </div>
   )
 }
-

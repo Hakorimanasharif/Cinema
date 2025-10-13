@@ -82,7 +82,7 @@ export default function TrailerButton({
           
           {/* Video Container */}
           <div className="flex-1 relative  p-6">
-            <div className="relative w-full h-full bg-gray-900/30 rounded-xl overflow-hidden border-2 border-gray-700/50 shadow-inner">
+            <div className="relative w-300px h-full  rounded-xl overflow-hidden border-2  shadow-inner">
               <iframe
                 src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1`}
                 allow="autoplay; encrypted-media"
