@@ -17,6 +17,11 @@ interface WebsiteSettings {
   facebookPixel?: string
   metaKeywords?: string
   ogImage?: string
+  socialFacebook?: string
+  socialTwitter?: string
+  socialInstagram?: string
+  socialYouTube?: string
+  socialTikTok?: string
 }
 
 interface SettingsContextType {

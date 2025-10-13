@@ -1,7 +1,7 @@
 "use client"
 
 import { useSettings } from "./settings-context"
-import { Facebook, Twitter, Instagram } from "lucide-react"
+import { Facebook, Twitter, Instagram, Youtube, Music } from "lucide-react"
 
 export default function Footer() {
   const { settings } = useSettings()
@@ -118,15 +118,31 @@ export default function Footer() {
         <div className="pt-8 border-t border-gray-800 text-center">
           <p className="text-sm text-gray-400 mb-4">© {new Date().getFullYear()} {settings.siteName || "Cinemax"}. All rights reserved.</p>
           <div className="flex justify-center space-x-4">
-            <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200">
-              <Facebook className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200">
-              <Twitter className="h-5 w-5" />
-            </a>
-            <a href="#" className="text-gray-400 hover:text-white transition-colors duration-200">
-              <Instagram className="h-5 w-5" />
-            </a>
+            {settings.socialFacebook && (
+              <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <Facebook className="h-5 w-5" />
+              </a>
+            )}
+            {settings.socialTwitter && (
+              <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <Twitter className="h-5 w-5" />
+              </a>
+            )}
+            {settings.socialInstagram && (
+              <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <Instagram className="h-5 w-5" />
+              </a>
+            )}
+            {settings.socialYouTube && (
+              <a href={settings.socialYouTube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <Youtube className="h-5 w-5" />
+              </a>
+            )}
+            {settings.socialTikTok && (
+              <a href={settings.socialTikTok} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <Music className="h-5 w-5" />
+              </a>
+            )}
           </div>
         </div>
       </div>
