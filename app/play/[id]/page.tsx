@@ -18,13 +18,19 @@ import {
   Film,
   ChevronLeft,
   ChevronRight,
+  Home,
+  Tv,
+  Star,
+  Clock,
+  Calendar,
+  Users,
+  Languages,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
-
 import YouTubePlayer from "@/components/youtube-player"
 import LoadingSpinner from "@/components/loading-spinner"
 import MovieComments from "@/components/movie-comments"
@@ -245,6 +251,17 @@ export default function PlayPage({ params }: PlayPageProps) {
     return content?.videoUrl
   }
 
+  const getCurrentEmbedCode = () => {
+    if (isSeries && content.seasons) {
+      const season = content.seasons.find((s: Season) => s.seasonNumber === currentSeason)
+      if (season) {
+        const episode = season.episodes.find((e: Episode) => e.episodeNumber === currentEpisode)
+        return episode?.embedCode
+      }
+    }
+    return content?.embedCode
+  }
+
   const getCurrentEpisode = () => {
     if (isSeries && content.seasons) {
       const season = content.seasons.find((s: Season) => s.seasonNumber === currentSeason)
@@ -429,6 +446,7 @@ export default function PlayPage({ params }: PlayPageProps) {
 
   const currentEpisodeData = getCurrentEpisode()
   const videoUrl = getCurrentVideoUrl()
+  const embedCode = getCurrentEmbedCode()
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -436,32 +454,38 @@ export default function PlayPage({ params }: PlayPageProps) {
       <Header />
 
       <main className="bg-black pt-16">
-        {/* Back button */}
+        {/* Netflix-style Back Navigation */}
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link href={isSeries ? `/series/${content._id}` : `/movie/${content.id}`}>
-            <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to {isSeries ? "series" : "movie"} details
+            <Button variant="ghost" size="sm" className="mb-4 hover:bg-white/10 transition-all duration-300">
+              <ArrowLeft className="mr-2 h-4 w-4" /> 
+              Back to {isSeries ? "series" : "movie"} details
             </Button>
           </Link>
         </div>
 
-        {/* Episode Navigation for Series */}
+        {/* Netflix-style Episode Navigation for Series */}
         {isSeries && (
-          <div className="max-w-7xl mx-auto px-4 mb-4">
-            <div className="flex items-center justify-between bg-gray-900/50 rounded-lg p-4">
+          <div className="max-w-7xl mx-auto px-4 mb-6">
+            <div className="flex items-center justify-between bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
               <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <Tv className="w-5 h-5 text-red-500" />
+                  <span className="text-white font-semibold">Currently Watching:</span>
+                </div>
+                
                 <Select value={currentSeason.toString()} onValueChange={(value) => {
                   setCurrentSeason(parseInt(value))
                   setCurrentEpisode(1)
                   const newUrl = `/play/${id}?season=${value}&episode=1`
                   window.history.replaceState({}, '', newUrl)
                 }}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-40 bg-gray-800 border-gray-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-800 border-gray-600 text-white">
                     {content.seasons?.map((season: Season) => (
-                      <SelectItem key={season.seasonNumber} value={season.seasonNumber.toString()}>
+                      <SelectItem key={season.seasonNumber} value={season.seasonNumber.toString()} className="hover:bg-gray-700">
                         Season {season.seasonNumber}
                       </SelectItem>
                     ))}
@@ -473,12 +497,12 @@ export default function PlayPage({ params }: PlayPageProps) {
                   const newUrl = `/play/${id}?season=${currentSeason}&episode=${value}`
                   window.history.replaceState({}, '', newUrl)
                 }}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-40 bg-gray-800 border-gray-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-gray-800 border-gray-600 text-white">
                     {content.seasons?.find((s: Season) => s.seasonNumber === currentSeason)?.episodes.map((episode: Episode) => (
-                      <SelectItem key={episode.episodeNumber} value={episode.episodeNumber.toString()}>
+                      <SelectItem key={episode.episodeNumber} value={episode.episodeNumber.toString()} className="hover:bg-gray-700">
                         Episode {episode.episodeNumber}
                       </SelectItem>
                     ))}
@@ -488,22 +512,26 @@ export default function PlayPage({ params }: PlayPageProps) {
 
               <div className="flex items-center gap-2">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => navigateEpisode('prev')}
                   disabled={currentSeason === 1 && currentEpisode === 1}
+                  className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600 transition-all duration-300"
                 >
                   <ChevronLeft className="w-4 h-4" />
+                  Prev
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => navigateEpisode('next')}
                   disabled={
                     currentSeason === content.seasons?.length &&
                     currentEpisode === content.seasons?.[content.seasons.length - 1]?.episodes.length
                   }
+                  className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600 transition-all duration-300"
                 >
+                  Next
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -511,15 +539,15 @@ export default function PlayPage({ params }: PlayPageProps) {
           </div>
         )}
 
-        {/* Video Player */}
+        {/* Netflix-style Video Player Container */}
         {showYouTubePlayer ? (
           <div className="max-w-7xl mx-auto px-4">
             <YouTubePlayer videoId="tbzb8cNfeeY" onClose={() => setShowYouTubePlayer(false)} isTrailer={false} />
           </div>
         ) : viewMode === 'trailer' && !isSeries ? (
           <div className="max-w-7xl mx-auto px-4">
-            {/* Large Trailer */}
-            <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-6">
+            {/* Netflix-style Hero Section with Trailer */}
+            <div className="relative aspect-video bg-black rounded-xl overflow-hidden mb-8 border border-gray-700/50 shadow-2xl">
               {content.trailerYouTubeId ? (
                 <YouTubePlayer videoId={content.trailerYouTubeId} onClose={() => {}} isTrailer={true} />
               ) : (
@@ -530,68 +558,154 @@ export default function PlayPage({ params }: PlayPageProps) {
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <p className="text-white text-xl text-center">No Trailer Available</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex items-end">
+                    <div className="p-8 w-full">
+                      <div className="max-w-2xl">
+                        <h1 className="text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent font-['Bebas_Neue'] tracking-tight">
+                          {content.title}
+                        </h1>
+                        
+                        {/* Movie Info Badges */}
+                        <div className="flex items-center gap-4 mb-4 flex-wrap">
+                          <div className="flex items-center gap-2 bg-red-600/20 px-3 py-1 rounded-full border border-red-600/30">
+                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                            <span className="text-white text-sm font-semibold">{content.rating}/10</span>
+                          </div>
+                          {content.year && (
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <Calendar className="w-4 h-4" />
+                              <span className="text-sm">{content.year}</span>
+                            </div>
+                          )}
+                          {content.duration && (
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <Clock className="w-4 h-4" />
+                              <span className="text-sm">{content.duration}</span>
+                            </div>
+                          )}
+                          {content.views && (
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <Users className="w-4 h-4" />
+                              <span className="text-sm">{content.views} Views</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                          <Button
+                            className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg shadow-red-600/25"
+                            onClick={() => setViewMode('player')}
+                          >
+                            <Play className="mr-3 h-5 w-5 fill-white" />
+                            Watch Full Movie
+                          </Button>
+                          <Button
+                            className="bg-transparent hover:bg-white/10 border-2 border-white/30 text-white px-8 py-6 text-lg font-semibold backdrop-blur-sm hover:border-white/50 transform hover:scale-105 transition-all duration-300"
+                            onClick={handleDownload}
+                            disabled={isLoading}
+                          >
+                            {isLoading ? (
+                              <>
+                                <LoadingSpinner size="sm" color="white" className="mr-2" />
+                                Downloading...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="mr-3 h-5 w-5" />
+                                Download Movie
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
             </div>
 
-            {/* Hero Section */}
-            <div className="space-y-4">
-              <h1 className="text-3xl font-bold">{content.title}</h1>
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span>{content.year}</span>
-                {content.duration && <span>{content.duration}</span>}
-                {content.rating && <span>{content.rating}</span>}
-                {content.region && <span>{content.region}</span>}
-                {content.translator && <span>{content.translator}</span>}
-                <span>{content.views || 0} Views</span>
+            {/* Additional Movie Info */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <h2 className="text-2xl font-bold mb-4">Synopsis</h2>
+                <p className="text-gray-300 leading-relaxed">{content.description}</p>
+                
+                {/* Movie Details */}
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  {content.region && (
+                    <div>
+                      <h4 className="text-sm text-gray-400 mb-1">Region</h4>
+                      <p className="text-white">{content.region}</p>
+                    </div>
+                  )}
+                  {content.translator && (
+                    <div>
+                      <h4 className="text-sm text-gray-400 mb-1">Translator</h4>
+                      <div className="flex items-center gap-2 text-white">
+                        <Languages className="w-4 h-4" />
+                        {content.translator}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              {content.description && <p className="text-gray-300">{content.description}</p>}
+              
+              {/* Quick Actions Sidebar */}
+              <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 h-fit">
+                <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+                <div className="space-y-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start border-gray-600 text-white hover:bg-red-600 hover:border-red-600"
+                    onClick={() => setShowTrailerPlayer(true)}
+                  >
+                    <Film className="mr-3 h-4 w-4" />
+                    Watch Trailer
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start border-gray-600 text-white hover:bg-red-600 hover:border-red-600"
+                    onClick={handleDownload}
+                    disabled={isLoading}
+                  >
+                    <Download className="mr-3 h-4 w-4" />
+                    {isLoading ? 'Downloading...' : 'Download Movie'}
+                  </Button>
+                  <Link href="/" className="block">
+                    <Button variant="outline" className="w-full justify-start border-gray-600 text-white hover:bg-red-600 hover:border-red-600">
+                      <Home className="mr-3 h-4 w-4" />
+                      Browse More
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </div>
-
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-8">
-              <Button
-                className="flex-1 bg-red-600 hover:bg-red-700 py-4 text-lg font-semibold"
-                onClick={() => setViewMode('player')}
-              >
-                <Play className="mr-2 h-5 w-5" />
-                Watch Full Movie
-              </Button>
-              <Button
-                className="flex-1 py-4 text-lg"
-                variant="outline"
-                onClick={handleDownload}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner size="sm" color="primary" className="mr-2" />
-                    Downloading...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Movie
-                  </>
-                )}
-              </Button>
+          </div>
+        ) : embedCode ? (
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="aspect-video bg-black rounded-xl overflow-hidden border border-gray-700/50">
+              <div dangerouslySetInnerHTML={{ __html: embedCode }} />
             </div>
           </div>
         ) : (
           <div
             ref={playerContainerRef}
-            className={`relative mx-auto ${isFullscreen ? "w-full" : "max-w-7xl"}`}
+            className={`relative mx-auto ${isFullscreen ? "w-full" : "max-w-7xl px-4"}`}
             onMouseEnter={() => setShowControls(true)}
             onMouseLeave={() => isPlaying && setShowControls(false)}
           >
-            
-
+            {isBuffering && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                <div className="text-center">
+                  <LoadingSpinner size="lg" color="primary" />
+                  <p className="text-white mt-4">Loading content...</p>
+                </div>
+              </div>
+            )}
             <video
               ref={videoRef}
-              className="w-full aspect-video bg-black"
+              className="w-full aspect-video bg-black rounded-xl"
               poster={content.coverImage}
               onTimeUpdate={handleTimeUpdate}
               onPlay={() => setIsPlaying(true)}
@@ -608,43 +722,46 @@ export default function PlayPage({ params }: PlayPageProps) {
               Your browser does not support the video tag.
             </video>
 
-            {/* Video Controls */}
+            {/* Netflix-style Video Controls */}
             <div
-              className={`absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${
+              className={`absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 ${
                 showControls ? "opacity-100" : "opacity-0"
               }`}
             >
-              <div className="px-4 pb-1">
+              <div className="px-6 pb-1">
                 <Slider
                   value={[progress]}
                   min={0}
                   max={100}
                   step={0.1}
                   onValueChange={handleProgressChange}
-                  className="w-full [&>span:first-child]:h-1 [&>span:first-child]:bg-white/30 [&_[role=slider]]:bg-red-600 [&_[role=slider]]:w-3 [&_[role=slider]]:h-3 [&_[role=slider]]:border-0 [&>span:first-child_span]:bg-red-600 [&_[role=slider]:focus-visible]:ring-0 [&_[role=slider]:focus-visible]:ring-offset-0 [&_[role=slider]:focus-visible]:scale-105 [&_[role=slider]:focus-visible]:transition-transform"
+                  className="w-full [&>span:first-child]:h-1.5 [&>span:first-child]:bg-white/30 [&_[role=slider]]:bg-red-600 [&_[role=slider]]:w-4 [&_[role=slider]]:h-4 [&_[role=slider]]:border-0 [&>span:first-child_span]:bg-red-600 [&_[role=slider]:focus-visible]:ring-2 [&_[role=slider]:focus-visible]:ring-red-400 [&_[role=slider]:focus-visible]:ring-offset-2 [&_[role=slider]:focus-visible]:scale-110 [&_[role=slider]:focus-visible]:transition-transform"
                 />
               </div>
-              <div className="flex items-center gap-3 p-4 pt-0 text-white [&_svg]:text-white">
-                <Button size="icon" variant="ghost" className="w-9 h-9 hover:bg-black/50" onClick={togglePlay}>
+              <div className="flex items-center gap-4 p-6 pt-2 text-white">
+                <Button size="icon" variant="ghost" className="w-12 h-12 hover:bg-white/20 transition-all duration-300" onClick={togglePlay}>
                   {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 fill-white" />}
                 </Button>
-                <Button size="icon" variant="ghost" className="w-9 h-9 hover:bg-black/50" onClick={rewind}>
-                  <Rewind className="w-6 h-6" />
+                <Button size="icon" variant="ghost" className="w-10 h-10 hover:bg-white/20 transition-all duration-300" onClick={rewind}>
+                  <Rewind className="w-5 h-5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="w-9 h-9 hover:bg-black/50" onClick={fastForward}>
-                  <FastForward className="w-6 h-6" />
+                <Button size="icon" variant="ghost" className="w-10 h-10 hover:bg-white/20 transition-all duration-300" onClick={fastForward}>
+                  <FastForward className="w-5 h-5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="w-9 h-9 hover:bg-black/50" onClick={toggleMute}>
-                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                <Button size="icon" variant="ghost" className="w-10 h-10 hover:bg-white/20 transition-all duration-300" onClick={toggleMute}>
+                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                 </Button>
-                <div className="text-sm">
+                <div className="text-sm font-medium bg-black/30 px-3 py-1 rounded">
                   {videoRef.current ? formatTime(videoRef.current.currentTime) : "0:00"} /{" "}
                   {videoRef.current ? formatTime(videoRef.current.duration || 0) : "0:00"}
                 </div>
+                
+                <div className="flex-1" />
+                
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="hover:bg-black/50 ml-auto"
+                  className="hover:bg-white/20 transition-all duration-300"
                   onClick={handleDownload}
                   disabled={isLoading}
                 >
@@ -655,94 +772,106 @@ export default function PlayPage({ params }: PlayPageProps) {
                     </>
                   ) : (
                     <>
-                      <Download className="w-5 h-5 mr-2" /> Download
+                      <Download className="w-4 h-4 mr-2" /> Download
                     </>
                   )}
                 </Button>
-                <Link href={`/download/${content.id}`} className="ml-2">
-                  <Button variant="ghost" size="sm" className="hover:bg-black/50">
-                    <Download className="w-5 h-5 mr-2" /> Download Options
-                  </Button>
-                </Link>
-                <Button size="icon" variant="ghost" className="w-9 h-9 hover:bg-black/50" onClick={toggleFullscreen}>
-                  {isFullscreen ? <Minimize className="w-6 h-6" /> : <Maximize className="w-6 h-6" />}
+                <Button size="icon" variant="ghost" className="w-10 h-10 hover:bg-white/20 transition-all duration-300" onClick={toggleFullscreen}>
+                  {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
                 </Button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Trailer Player */}
-        {showTrailerPlayer && (
-          <div className="max-w-7xl mx-auto px-4">
-            <YouTubePlayer videoId={content.trailerYouTubeId} onClose={() => setShowTrailerPlayer(false)} isTrailer={true} />
           </div>
         )}
 
         {/* Content Info for Player View */}
         {viewMode === 'player' && (
           <div className="max-w-7xl mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-2">
-              {content.title}
-              {isSeries && currentEpisodeData && ` - S${currentSeason}E${currentEpisode}: ${currentEpisodeData.title}`}
-            </h1>
-            <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-              <span>{content.year}</span>
-              {isSeries ? (
-                currentEpisodeData?.duration && <span>{currentEpisodeData.duration}</span>
-              ) : (
-                content.duration && <span>{content.duration}</span>
-              )}
-              {content.rating && <span>{content.rating}</span>}
-              {content.region && <span>Region: {content.region}</span>}
-              {content.translator && <span>Translator: {content.translator}</span>}
-              <span>{content.views || 0} Views</span>
-            </div>
-            <p className="text-gray-300">
-              {isSeries && currentEpisodeData?.description ? currentEpisodeData.description : content.description}
-            </p>
-
-            {/* Rating Section */}
-            <div className="mt-6">
-              <h4 className="text-lg font-semibold mb-2">Rate this {isSeries ? 'episode' : 'movie'}</h4>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => handleRating(star)}
-                    className={`text-2xl ${star <= userRating ? 'text-yellow-400' : 'text-gray-400'} hover:text-yellow-400 transition-colors`}
-                  >
-                    ★
-                  </button>
-                ))}
-                <span className="ml-2 text-sm text-gray-400">
-                  {userRating > 0 ? `You rated: ${userRating}/5` : 'Click to rate'}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              {content.trailerYouTubeId && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowTrailerPlayer(true)}
-                >
-                  <Film className="mr-2 h-4 w-4" /> Trailer
-                </Button>
-              )}
-
-              <Button variant="outline" onClick={handleDownload} disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner size="sm" color="primary" className="mr-2" />
-                    Downloading...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" /> Download
-                  </>
+            <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
+              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                {content.title}
+                {isSeries && currentEpisodeData && ` - S${currentSeason}E${currentEpisode}: ${currentEpisodeData.title}`}
+              </h1>
+              
+              <div className="flex items-center gap-6 text-gray-300 mb-6 flex-wrap">
+                {content.year && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>{content.year}</span>
+                  </div>
                 )}
-              </Button>
+                {isSeries ? (
+                  currentEpisodeData?.duration && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      <span>{currentEpisodeData.duration}</span>
+                    </div>
+                  )
+                ) : (
+                  content.duration && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      <span>{content.duration}</span>
+                    </div>
+                  )
+                )}
+                {content.rating && (
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    <span>{content.rating}/10</span>
+                  </div>
+                )}
+                {content.region && (
+                  <div className="flex items-center gap-2">
+                    <span>🌍 {content.region}</span>
+                  </div>
+                )}
+                {content.translator && (
+                  <div className="flex items-center gap-2">
+                    <Languages className="w-4 h-4" />
+                    <span>{content.translator}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  <span>{content.views || 0} Views</span>
+                </div>
+              </div>
+              
+              <p className="text-gray-300 text-lg leading-relaxed">
+                {isSeries && currentEpisodeData?.description ? currentEpisodeData.description : content.description}
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-4 mt-6">
+                {content.trailerYouTubeId && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowTrailerPlayer(true)}
+                    className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600 transition-all duration-300"
+                  >
+                    <Film className="mr-2 h-4 w-4" /> Watch Trailer
+                  </Button>
+                )}
+
+                <Button 
+                  variant="outline" 
+                  onClick={handleDownload} 
+                  disabled={isLoading}
+                  className="border-gray-600 text-white hover:bg-red-600 hover:border-red-600 transition-all duration-300"
+                >
+                  {isLoading ? (
+                    <>
+                      <LoadingSpinner size="sm" color="white" className="mr-2" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" /> Download
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -750,45 +879,52 @@ export default function PlayPage({ params }: PlayPageProps) {
         {/* Comments Section */}
         {!isSeries && <MovieComments movieId={content.id} movieTitle={content.title} />}
 
-        {/* Related Movies */}
+        {/* Netflix-style Related Movies Carousel */}
         {!isSeries && relatedMovies.length > 0 && (
-          <div className="max-w-7xl mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold mb-6">Related Movies</h2>
-            <div className="relative">
-              <button
-                onClick={scrollLeft}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full text-white transition-colors"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <div
-                ref={relatedCarouselRef}
-                className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {relatedMovies.map((movie) => (
-                  <Link key={movie._id} href={`/movie/${movie._id}`}>
-                    <div className="flex-shrink-0 w-40">
-                      <div className="group">
-                        <div className="relative aspect-[2/3] overflow-hidden rounded-md transition-transform duration-300 group-hover:scale-105">
-                          <Image src={movie.coverImage || "/placeholder.svg"} alt={movie.title} fill className="object-cover" />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
-                        </div>
-                        <h3 className="mt-2 text-sm font-medium truncate">{movie.title}</h3>
-                        <p className="text-xs text-gray-400">{movie.year}</p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+          <div className="max-w-7xl mx-auto px-4 py-12">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                More Like This
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={scrollLeft}
+                  className="bg-gray-800 hover:bg-gray-700 p-3 rounded-full text-white transition-all duration-300 hover:scale-110"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="bg-gray-800 hover:bg-gray-700 p-3 rounded-full text-white transition-all duration-300 hover:scale-110"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight size={20} />
+                </button>
               </div>
-              <button
-                onClick={scrollRight}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 p-2 rounded-full text-white transition-colors"
-                aria-label="Scroll right"
-              >
-                <ChevronRight size={24} />
-              </button>
+            </div>
+            <div
+              ref={relatedCarouselRef}
+              className="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {relatedMovies.map((movie) => (
+                <Link key={movie._id} href={`/movie/${movie._id}`} className="flex-shrink-0 w-48 group">
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-lg transition-all duration-500 group-hover:scale-105">
+                    <Image 
+                      src={movie.coverImage || "/placeholder.svg"} 
+                      alt={movie.title} 
+                      fill 
+                      className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                      <h3 className="text-white font-semibold text-sm truncate">{movie.title}</h3>
+                      <p className="text-gray-300 text-xs">{movie.year}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}

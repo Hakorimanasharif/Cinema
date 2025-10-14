@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Play, Download, Plus, Share2 } from "lucide-react"
+import { Play, Download, Plus, Share2, Star, Clock, Calendar, Users, Languages, ThumbsUp, Film } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import TrailerButton from "@/components/trailer-button"
 import Header from "@/components/header"
@@ -26,6 +26,8 @@ export default function MoviePage({ params }: MoviePageProps) {
   const [relatedMovies, setRelatedMovies] = useState<any[]>([])
   const [loadingMovie, setLoadingMovie] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [userRating, setUserRating] = useState(0)
+  const [isInWatchlist, setIsInWatchlist] = useState(false)
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cinemax-8yem.onrender.com"
 
@@ -45,14 +47,16 @@ export default function MoviePage({ params }: MoviePageProps) {
           duration: data.duration,
           rating: data.rating,
           coverImage: data.coverImage,
-          posterImage: data.coverImage, // assuming same
+          posterImage: data.coverImage,
           trailerYouTubeId: data.trailerYouTubeId,
           category: data.category,
           region: data.region,
           translator: data.translator,
-          cast: [], // backend doesn't have cast
-          director: "", // backend doesn't have director
-          genres: data.category ? [data.category] : [], // approximate
+          videoUrl: data.videoUrl,
+          views: data.views,
+          cast: [],
+          director: "",
+          genres: data.category ? [data.category] : [],
         })
 
         // Load related movies (same category)
@@ -79,33 +83,38 @@ export default function MoviePage({ params }: MoviePageProps) {
     loadMovie()
   }, [id, API_BASE])
 
-  if (loadingMovie) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
-
-  if (error || !movie) {
-    notFound()
-  }
-
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!movie.videoUrl) return
     setIsLoading(true)
 
-    // Simulate download delay
-    setTimeout(() => {
+    try {
+      // Track download
+      await fetch(`${API_BASE}/api/stats/download`, {
+        method: 'POST',
+      })
+    } catch (error) {
+      console.error("Failed to track download", error)
+    }
+
+    try {
+      const response = await fetch(movie.videoUrl)
+      if (!response.ok) throw new Error('Failed to fetch file')
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
-      link.href = movie.videoUrl
+      link.href = url
       link.download = `${movie.title.replace(/\s+/g, "_")}.mp4`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Download failed:", error)
+      // Fallback to direct link
+      window.open(movie.videoUrl, '_blank')
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   const handleShare = async () => {
@@ -130,132 +139,373 @@ export default function MoviePage({ params }: MoviePageProps) {
       })
     }
   }
+
+  const handleRating = async (rating: number) => {
+    if (!movie) return
+    try {
+      const res = await fetch(`${API_BASE}/api/movies/${id}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating })
+      })
+      if (res.ok) {
+        setUserRating(rating)
+      }
+    } catch (error) {
+      console.error('Failed to submit rating:', error)
+    }
+  }
+
+  const toggleWatchlist = () => {
+    setIsInWatchlist(!isInWatchlist)
+    // Here you would typically make an API call to update the user's watchlist
+  }
+
+  if (loadingMovie) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <LoadingSpinner size="lg" />
+          <p className="text-gray-400">Loading movie details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !movie) {
+    notFound()
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <Header />
 
       <main className="pt-16">
-        {/* Movie Banner */}
-        <div className="relative h-[400px]">
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10" />
-          <Image
-            src={movie.id === "25" ? "/images/banner1.jpg" : movie.coverImage}
-            alt={movie.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute bottom-0 left-0 right-0 p-8 z-20 max-w-7xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">{movie.title}</h1>
-            <div className="flex items-center gap-4 text-sm text-gray-300 mb-4">
-              <span>{movie.year}</span>
-              <span>{movie.duration}</span>
-              <span>{movie.rating}</span>
-              {movie.region && <span>{movie.region}</span>}
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href={`/play/${movie.id}`}>
-                <Button className="bg-red-600 hover:bg-red-700">
-                  <Play className="mr-2 h-4 w-4 fill-white" /> Watch Now
-                </Button>
-              </Link>
-              {movie.trailerYouTubeId && <TrailerButton videoId={movie.trailerYouTubeId} variant="default" />}
+        {/* Netflix-style Hero Banner */}
+        <div className="relative h-[70vh] min-h-[600px] overflow-hidden">
+          {/* Background Image with Enhanced Gradient */}
+          <div className="absolute inset-0">
+            <Image
+              src={movie.coverImage || "/placeholder.svg"}
+              alt={movie.title}
+              fill
+              className="object-cover object-center"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-transparent to-transparent z-10" />
+          </div>
+
+          {/* Content Overlay */}
+          <div className="relative z-20 h-full flex items-center">
+            <div className="max-w-7xl mx-auto px-8 w-full">
+              <div className="max-w-2xl">
+                {/* Title */}
+                <h1 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tight 
+                             bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent
+                             drop-shadow-2xl font-['Bebas_Neue'] leading-tight">
+                  {movie.title}
+                </h1>
+
+                {/* Movie Info Badges */}
+                <div className="flex items-center gap-4 mb-6 flex-wrap">
+                  <div className="flex items-center gap-2 bg-red-600/20 px-3 py-1 rounded-full border border-red-600/30">
+                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <span className="text-white text-sm font-semibold">{movie.rating}/10</span>
+                  </div>
+                  {movie.year && (
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm">{movie.year}</span>
+                    </div>
+                  )}
+                  {movie.duration && (
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm">{movie.duration}</span>
+                    </div>
+                  )}
+                  {movie.views && (
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm">{movie.views} Views</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl drop-shadow-lg">
+                  {movie.description}
+                </p>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center gap-4 mb-6">
+                  <Link href={`/play/${movie.id}`}>
+                    <Button 
+                      size="lg" 
+                      className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg font-semibold
+                               transform hover:scale-105 transition-all duration-300
+                               shadow-lg shadow-red-600/25 hover:shadow-red-600/40"
+                    >
+                      <Play className="mr-3 h-5 w-5 fill-white" /> 
+                      Watch Now
+                    </Button>
+                  </Link>
+                  
+                  {movie.trailerYouTubeId && (
+                    <TrailerButton 
+                      videoId={movie.trailerYouTubeId} 
+                      className="bg-transparent hover:bg-white/10 border-2 border-white/30 
+                               text-white px-8 py-6 text-lg font-semibold
+                               backdrop-blur-sm hover:border-white/50
+                               transform hover:scale-105 transition-all duration-300"
+                    />
+                  )}
+
+                  <Button 
+                    variant="ghost"
+                    onClick={toggleWatchlist}
+                    className={`text-white hover:text-white px-6 py-6 text-lg backdrop-blur-sm border border-transparent hover:border-white/20 transform hover:scale-105 transition-all duration-300 ${
+                      isInWatchlist ? 'bg-green-600/20 border-green-500/30' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <Plus className={`mr-2 h-5 w-5 ${isInWatchlist ? 'fill-green-400 text-green-400' : ''}`} />
+                    {isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
+                  </Button>
+                </div>
+
+                {/* Additional Info */}
+                <div className="flex items-center gap-6 text-gray-300 text-sm">
+                  {movie.region && (
+                    <div className="flex items-center gap-2">
+                      <span>🌍</span>
+                      <span>{movie.region}</span>
+                    </div>
+                  )}
+                  {movie.translator && (
+                    <div className="flex items-center gap-2">
+                      <Languages className="w-4 h-4" />
+                      <span>{movie.translator}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Movie Details */}
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="md:w-1/4">
-              <div className="relative aspect-[2/3] overflow-hidden rounded-md">
-                <Image
-                  src={movie.id === "25" ? "/images/fast-x.jpg" : movie.posterImage || "/placeholder.svg"}
-                  alt={movie.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="mt-4 flex flex-col gap-2">
-                <Link href={`/play/${movie.id}`}>
-                  <Button className="w-full bg-red-600 hover:bg-red-700">
-                    <Play className="mr-2 h-4 w-4" /> Watch Now
-                  </Button>
-                </Link>
-                {movie.trailerYouTubeId && (
-                  <TrailerButton videoId={movie.trailerYouTubeId} variant="default" className="w-full" />
-                )}
-                <Link href={`/download/${movie.id}`} className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" /> Download Options
-                  </Button>
-                </Link>
+        {/* Movie Details Section */}
+        <div className="max-w-7xl mx-auto px-8 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-24 space-y-6">
+                {/* Poster */}
+                <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-gray-700/50 shadow-2xl">
+                  <Image
+                    src={movie.posterImage || "/placeholder.svg"}
+                    alt={movie.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
 
-                <Button variant="outline" className="w-full">
-                  <Plus className="mr-2 h-4 w-4" /> Add to List
-                </Button>
-                <Button variant="outline" className="w-full" onClick={handleShare}>
-                  <Share2 className="mr-2 h-4 w-4" /> Share
-                </Button>
+                {/* Quick Actions */}
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+                  <h3 className="text-lg font-semibold mb-4 text-white">Quick Actions</h3>
+                  <div className="space-y-3">
+                    <Link href={`/play/${movie.id}`} className="block">
+                      <Button className="w-full bg-red-600 hover:bg-red-700 justify-start">
+                        <Play className="mr-3 h-4 w-4 fill-white" />
+                        Watch Movie
+                      </Button>
+                    </Link>
+                    
+                    {movie.trailerYouTubeId && (
+                      <TrailerButton 
+                        videoId={movie.trailerYouTubeId}
+                        className="w-full justify-start border-gray-600 text-white hover:bg-white/10"
+                        variant="outline"
+                      />
+                    )}
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-gray-600 text-white hover:bg-white/10"
+                      onClick={handleDownload}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <LoadingSpinner size="sm" color="white" className="mr-2" />
+                          Downloading...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="mr-3 h-4 w-4" />
+                          Download
+                        </>
+                      )}
+                    </Button>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-gray-600 text-white hover:bg-white/10"
+                      onClick={toggleWatchlist}
+                    >
+                      <Plus className={`mr-3 h-4 w-4 ${isInWatchlist ? 'fill-green-400 text-green-400' : ''}`} />
+                      {isInWatchlist ? 'In Watchlist' : 'Add to List'}
+                    </Button>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start border-gray-600 text-white hover:bg-white/10"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="mr-3 h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Rating Section */}
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+                  <h3 className="text-lg font-semibold mb-4 text-white">Your Rating</h3>
+                  <div className="flex items-center gap-1 mb-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => handleRating(star)}
+                        className={`text-2xl transition-all duration-300 hover:scale-110 ${
+                          star <= userRating ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-300'
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    {userRating > 0 ? `You rated ${userRating}/5 stars` : 'Click to rate this movie'}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="md:w-3/4">
-              <p className="text-gray-300 mb-6">{movie.description}</p>
 
-              <div className="mb-6">
-                <h2 className="text-xl font-bold mb-2">Cast</h2>
-                <p className="text-gray-300">{movie.cast.join(", ")}</p>
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              {/* Synopsis */}
+              <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 mb-8">
+                <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Synopsis
+                </h2>
+                <p className="text-gray-300 text-lg leading-relaxed">{movie.description}</p>
               </div>
 
+              {/* Movie Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Genres */}
+                <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+                  <h3 className="text-lg font-semibold mb-3 text-white flex items-center gap-2">
+                    <Film className="w-5 h-5 text-red-500" />
+                    Genres
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {movie.genres.map((genre: string) => (
+                      <span 
+                        key={genre} 
+                        className="px-3 py-2 bg-red-600/20 text-red-400 rounded-lg text-sm border border-red-600/30 backdrop-blur-sm hover:bg-red-600/30 transition-colors duration-300"
+                      >
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-
-              <div>
-                <h2 className="text-xl font-bold mb-2">Genres</h2>
-                <div className="flex flex-wrap gap-2">
-                  {movie.genres.map((genre: string) => (
-                    <span key={genre} className="px-3 py-1 bg-gray-800 rounded-full text-sm">
-                      {genre}
-                    </span>
-                  ))}
+                {/* Additional Info */}
+                <div className="bg-gray-900/30 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+                  <h3 className="text-lg font-semibold mb-3 text-white">Details</h3>
+                  <div className="space-y-3">
+                    {movie.duration && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Duration</span>
+                        <span className="text-white">{movie.duration}</span>
+                      </div>
+                    )}
+                    {movie.year && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Release Year</span>
+                        <span className="text-white">{movie.year}</span>
+                      </div>
+                    )}
+                    {movie.region && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Region</span>
+                        <span className="text-white">{movie.region}</span>
+                      </div>
+                    )}
+                    {movie.translator && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Translator</span>
+                        <span className="text-white">{movie.translator}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {movie.translator && (
-                <div className="mt-6">
-                  <h2 className="text-xl font-bold mb-2">Translator</h2>
-                  <p className="text-gray-300">{movie.translator}</p>
+              {/* Cast Section (if available) */}
+              {movie.cast && movie.cast.length > 0 && (
+                <div className="bg-gray-900/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 mb-8">
+                  <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    Cast
+                  </h2>
+                  <div className="flex flex-wrap gap-4">
+                    {movie.cast.slice(0, 6).map((actor: string, index: number) => (
+                      <div key={index} className="text-center">
+                        <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mb-2">
+                          <Users className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <p className="text-sm text-white">{actor}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* User Rating Section */}
-              <div className="mt-8 p-4 bg-gray-800 rounded-lg">
-                <h2 className="text-xl font-bold mb-4">Rate This Movie</h2>
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button key={star} className="text-2xl text-yellow-400 hover:scale-110 transition-transform">
-                      ★
-                    </button>
-                  ))}
-                  <span className="ml-2 text-gray-400">(Click to rate)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Comments Section */}
-          <MovieComments movieId={movie.id} movieTitle={movie.title} moviePoster={movie.coverImage} />
-
-          {/* Related Movies */}
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4">You May Also Like</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {relatedMovies.map((relatedMovie) => (
-                <MovieCard key={relatedMovie.id} movie={relatedMovie} />
-              ))}
+              {/* Comments Section */}
+              <MovieComments 
+                movieId={movie.id} 
+                movieTitle={movie.title} 
+                moviePoster={movie.coverImage} 
+              />
             </div>
           </div>
         </div>
+
+        {/* Netflix-style Related Movies */}
+        {relatedMovies.length > 0 && (
+          <div className="bg-gradient-to-b from-black to-gray-900 py-16">
+            <div className="max-w-7xl mx-auto px-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  More Like This
+                </h2>
+                <Link href="/browse">
+                  <Button variant="ghost" className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+                    View All
+                  </Button>
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {relatedMovies.map((relatedMovie) => (
+                  <MovieCard key={relatedMovie.id} movie={relatedMovie} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
