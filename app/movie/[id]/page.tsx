@@ -242,17 +242,30 @@ export default function MoviePage({ params }: MoviePageProps) {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap items-center gap-4 mb-6">
-                  <Link href={`/play/${movie.id}`}>
+                  {movie.videoUrl && movie.videoUrl.startsWith('http') && !movie.videoUrl.includes(window.location.hostname) ? (
                     <Button 
                       size="lg" 
                       className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg font-semibold
                                transform hover:scale-105 transition-all duration-300
                                shadow-lg shadow-red-600/25 hover:shadow-red-600/40"
+                      onClick={() => window.open(movie.videoUrl, '_blank')}
                     >
                       <Play className="mr-3 h-5 w-5 fill-white" /> 
                       Watch Now
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link href={`/play/${movie.id}`}>
+                      <Button 
+                        size="lg" 
+                        className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg font-semibold
+                                 transform hover:scale-105 transition-all duration-300
+                                 shadow-lg shadow-red-600/25 hover:shadow-red-600/40"
+                      >
+                        <Play className="mr-3 h-5 w-5 fill-white" /> 
+                        Watch Now
+                      </Button>
+                    </Link>
+                  )}
                   
                   {movie.trailerYouTubeId && (
                     <TrailerButton 
@@ -316,12 +329,22 @@ export default function MoviePage({ params }: MoviePageProps) {
                 <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
                   <h3 className="text-lg font-semibold mb-4 text-white">Quick Actions</h3>
                   <div className="space-y-3">
-                    <Link href={`/play/${movie.id}`} className="block">
-                      <Button className="w-full bg-red-600 hover:bg-red-700 justify-start">
+                    {movie.videoUrl && movie.videoUrl.startsWith('http') && !movie.videoUrl.includes(window.location.hostname) ? (
+                      <Button 
+                        className="w-full bg-red-600 hover:bg-red-700 justify-start"
+                        onClick={() => window.open(movie.videoUrl, '_blank')}
+                      >
                         <Play className="mr-3 h-4 w-4 fill-white" />
                         Watch Movie
                       </Button>
-                    </Link>
+                    ) : (
+                      <Link href={`/play/${movie.id}`} className="block">
+                        <Button className="w-full bg-red-600 hover:bg-red-700 justify-start">
+                          <Play className="mr-3 h-4 w-4 fill-white" />
+                          Watch Movie
+                        </Button>
+                      </Link>
+                    )}
                     
                     {movie.trailerYouTubeId && (
                       <TrailerButton 

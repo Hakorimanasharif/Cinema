@@ -81,7 +81,7 @@ export default function PlayPage({ params }: PlayPageProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showYouTubePlayer, setShowYouTubePlayer] = useState(false)
   const [showTrailerPlayer, setShowTrailerPlayer] = useState(false)
-  const [viewMode, setViewMode] = useState<'trailer' | 'player'>('trailer')
+  const [viewMode, setViewMode] = useState<'trailer' | 'player'>('player')
   const [isLoading, setIsLoading] = useState(false)
   const [isBuffering, setIsBuffering] = useState(true)
   const [userRating, setUserRating] = useState(0)
@@ -170,25 +170,15 @@ export default function PlayPage({ params }: PlayPageProps) {
     updateViews()
 
     // Set view mode
-    if (!isSeries) {
-      setViewMode('trailer')
-    } else {
-      setViewMode('player')
-    }
+    // Always start with player mode when coming from "Watch Now"
+    setViewMode('player')
 
     // Check if this is Fast X (ID 25) and automatically show YouTube player
     if (!isSeries && content.id === "25") {
       setShowYouTubePlayer(true)
     }
 
-    // Check if video URL is an external link and open it directly
-    const videoUrl = getCurrentVideoUrl()
-    if (videoUrl && (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) && !videoUrl.includes(window.location.hostname)) {
-      window.open(videoUrl, '_blank')
-      // Redirect back to movie page
-      window.location.href = isSeries ? `/series/${content._id}` : `/movie/${content.id}`
-      return
-    }
+    // Removed automatic opening of external video URLs to allow them to play in the video player
 
     // Set up fullscreen change event listener
     const handleFullscreenChange = () => {
@@ -595,7 +585,14 @@ export default function PlayPage({ params }: PlayPageProps) {
                         <div className="flex flex-col sm:flex-row gap-4 mt-6">
                           <Button
                             className="bg-red-600 hover:bg-red-700 px-8 py-6 text-lg font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg shadow-red-600/25"
-                            onClick={() => setViewMode('player')}
+                            onClick={() => {
+                              const videoUrl = getCurrentVideoUrl()
+                              if (videoUrl && (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) && !videoUrl.includes(window.location.hostname)) {
+                                window.open(videoUrl, '_blank')
+                              } else {
+                                setViewMode('player')
+                              }
+                            }}
                           >
                             <Play className="mr-3 h-5 w-5 fill-white" />
                             Watch Full Movie
