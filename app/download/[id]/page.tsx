@@ -54,33 +54,7 @@ export default function DownloadPage({ params }: DownloadPageProps) {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header/Navigation */}
-      <header className="flex items-center justify-between p-4 bg-black/90 border-b border-gray-800">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center">
-            <h1 className="text-xl font-bold text-red-600">Cinemax</h1>
-          </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/tv" className="text-sm hover:text-red-500 transition-colors duration-200">
-              TV
-            </Link>
-            <Link href="/movies" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Movies
-            </Link>
-            <Link href="/category/animation" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Animation
-            </Link>
-            <Link href="/category/rwandan" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Rwandan
-            </Link>
-            <Link href="/sports" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Sports
-            </Link>
-            <Link href="/premium" className="text-sm hover:text-red-500 transition-colors duration-200">
-              Premium
-            </Link>
-          </nav>
-        </div>
-      </header>
+      
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-6">
@@ -173,11 +147,7 @@ export default function DownloadPage({ params }: DownloadPageProps) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black/90 border-t border-gray-800 py-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-sm text-gray-400">© 2025 Cinemax. All rights reserved.</p>
-        </div>
-      </footer>
+     
 
       {/* WhatsApp Button */}
       <WhatsAppButton />

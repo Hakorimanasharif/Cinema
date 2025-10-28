@@ -5,11 +5,12 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import MovieCard from "@/components/movie-card"
+import SeriesCard from "@/components/series-card"
 
 interface CategoryRowProps {
   title: string
   category: string
-  type?: "movie" | "series"
+  type?: "movie" | "series" | "both"
   region?: string
   translator?: string
   genre?: string
@@ -26,38 +27,79 @@ export default function CategoryRow({ title, category, type = "movie", region, t
       setIsLoading(true)
       setError(null)
       try {
-        let url = `${API_BASE}/api/${type === 'series' ? 'series' : 'movies'}`
-        const params = new URLSearchParams()
-        if (category === "trending" || category === "popular") {
-          params.append("sort", "trending")
-        } else if (category === "newest" || category === "new") {
-          params.append("sort", "newest")
-        } else if (category) {
-          params.append("category", category)
+        let allItems: any[] = []
+
+        if (type === "both" || type === "movie") {
+          let url = `${API_BASE}/api/movies`
+          const params = new URLSearchParams()
+          if (category === "trending" || category === "popular") {
+            params.append("sort", "trending")
+          } else if (category === "newest" || category === "new") {
+            params.append("sort", "newest")
+          } else if (category) {
+            params.append("category", category)
+          }
+          if (region && region !== "All") {
+            params.append("region", region)
+          }
+          if (translator && translator !== "All") {
+            params.append("translator", translator)
+          }
+          if (genre && genre !== "All") {
+            params.append("category", genre)
+          }
+          if (params.toString()) {
+            url += `?${params.toString()}`
+          }
+          const res = await fetch(url)
+          const data = await res.json()
+          if (res.ok) {
+            const mappedMovies = data.map((item: any) => ({
+              ...item,
+              type: "movie",
+              id: item._id,
+              posterImage: item.coverImage,
+            }))
+            allItems = [...allItems, ...mappedMovies]
+          }
         }
-        if (region && region !== "All") {
-          params.append("region", region)
+
+        if (type === "both" || type === "series") {
+          let url = `${API_BASE}/api/series`
+          const params = new URLSearchParams()
+          if (category === "trending" || category === "popular") {
+            params.append("sort", "trending")
+          } else if (category === "newest" || category === "new") {
+            params.append("sort", "newest")
+          } else if (category) {
+            params.append("category", category)
+          }
+          if (region && region !== "All") {
+            params.append("region", region)
+          }
+          if (translator && translator !== "All") {
+            params.append("translator", translator)
+          }
+          if (genre && genre !== "All") {
+            params.append("category", genre)
+          }
+          if (params.toString()) {
+            url += `?${params.toString()}`
+          }
+          const res = await fetch(url)
+          const data = await res.json()
+          if (res.ok) {
+            const mappedSeries = data.map((item: any) => ({
+              ...item,
+              type: "series",
+            }))
+            allItems = [...allItems, ...mappedSeries]
+          }
         }
-        if (translator && translator !== "All") {
-          params.append("translator", translator)
-        }
-        if (genre && genre !== "All") {
-          params.append("category", genre)
-        }
-        if (params.toString()) {
-          url += `?${params.toString()}`
-        }
-        const res = await fetch(url)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data?.error || "Failed to fetch items")
-        const mapped = data.map((item: any) => ({
-          id: item._id,
-          title: item.title,
-          year: item.year,
-          posterImage: item.coverImage,
-          trailerYouTubeId: item.trailerYouTubeId,
-        }))
-        setItems(mapped)
+
+        // Shuffle and limit to 20 items for mixed content
+        const shuffled = allItems.sort(() => 0.5 - Math.random()).slice(0, 20)
+        setItems(shuffled)
       } catch (e: any) {
         setError(e?.message || "Failed to load items")
       } finally {
@@ -124,6 +166,8 @@ export default function CategoryRow({ title, category, type = "movie", region, t
             <div key={item?.id || idx} className="w-[180px]">
               {isLoading ? (
                 <div className="animate-pulse h-[270px] bg-gray-800 rounded-md" />
+              ) : item.type === "series" ? (
+                <SeriesCard series={item} className="w-[180px]" />
               ) : (
                 <MovieCard movie={item} className="w-[180px]" />
               )}

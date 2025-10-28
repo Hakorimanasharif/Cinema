@@ -100,7 +100,7 @@ export default function TrailerButton({
             <Play className="h-5 w-5 fill-current" />
           ) : (
             <>
-              <Film className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+              <Film className="mr-2 h-8 w-8 group-hover:scale-110 transition-transform" />
               <span className="font-semibold">Watch Trailer</span>
             </>
           )}
@@ -233,7 +233,7 @@ export default function TrailerButton({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-4 z-50 text-white hover:bg-red-600 hover:text-white transition-all duration-300 rounded-full w-10 h-10 bg-black/50 backdrop-blur-sm border border-white/20"
+          className="absolute top-4 right-4 z-50 text-white hover:bg-red-600 hover:text-white transition-all duration-300  w-10 h-10 bg-black/50 backdrop-blur-sm border border-white/20"
           onClick={() => document.querySelector('[data-state="open"] button')?.click()}
         >
           <X className="h-5 w-5" />

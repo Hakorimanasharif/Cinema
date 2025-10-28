@@ -51,11 +51,20 @@ export default function MovieCard({ movie, className = "" }: MovieCardProps) {
           </div>
         </div>
 
-        {/* Center Section - Play Button */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-150">
+        {/* Center Section - Play and Trailer Buttons */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-150 space-y-4">
+          {/* Trailer Button - Above */}
+          {movie.trailerYouTubeId && (
+            <TrailerButton
+              videoId={movie.trailerYouTubeId}
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 shadow-lg transition-all duration-300 hover:scale-110"
+            />
+          )}
+
+          {/* Play Button - Below */}
           <Link href={`/movie/${movie.id}`}>
-            <Button 
-              size="icon" 
+            <Button
+              size="icon"
               className="rounded-full bg-red-600 hover:bg-red-700 shadow-2xl w-16 h-16 transition-all duration-300 hover:scale-110 border-2 border-white/20"
             >
               <Play className="h-7 w-7 fill-white ml-1" />
@@ -63,18 +72,8 @@ export default function MovieCard({ movie, className = "" }: MovieCardProps) {
           </Link>
         </div>
 
-        {/* Bottom Section - Trailer & Info */}
+        {/* Bottom Section - Info */}
         <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-6 group-hover/card:translate-y-0 transition-transform duration-500">
-          {/* Trailer Button */}
-          {movie.trailerYouTubeId && (
-            <div className="flex justify-center mb-4 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-200">
-              <TrailerButton 
-                videoId={movie.trailerYouTubeId}
-                className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 shadow-lg transition-all duration-300 hover:scale-110"
-              />
-            </div>
-          )}
-
           {/* Movie Info */}
           <div className="text-center space-y-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-300">
             <h3 className="text-white font-bold text-sm line-clamp-1 drop-shadow-lg">{movie.title}</h3>

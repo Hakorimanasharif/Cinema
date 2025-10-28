@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Play, Search, Filter, Star, Calendar, Eye } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
+import SeriesCard from "@/components/series-card"
 
 interface Series {
   _id: string
@@ -138,71 +139,7 @@ export default function SeriesPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredSeries.map((s) => (
-              <Card
-                key={s._id}
-                className="bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden group hover:shadow-lg transition-all duration-300"
-              >
-                <div className="relative">
-                  <Link href={`/series/${s._id}`}>
-                    <div className="aspect-[2/3] relative overflow-hidden">
-                      <Image
-                        src={s.coverImage || "/placeholder.svg"}
-                        alt={s.title}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                  </Link>
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Link href={`/series/${s._id}`}>
-                      <Button size="lg" className="gap-2">
-                        <Play className="w-5 h-5" />
-                        Watch Now
-                      </Button>
-                    </Link>
-                  </div>
-                  {s.category && (
-                    <Badge className="absolute top-2 left-2" variant="secondary">
-                      {s.category}
-                    </Badge>
-                  )}
-                </div>
-
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <Link href={`/series/${s._id}`}>
-                      <h3 className="font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors">
-                        {s.title}
-                      </h3>
-                    </Link>
-
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {s.year}
-                      </div>
-                      {s.rating && (
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-primary fill-primary" />
-                          <span className="font-medium">{String(s.rating)}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <p className="text-sm text-muted-foreground line-clamp-2">{s.description}</p>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                      <span className="text-xs text-muted-foreground">By {s.translator}</span>
-                      {s.views && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Eye className="w-3 h-3" />
-                          {s.views}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <SeriesCard key={s._id} series={s} />
             ))}
           </div>
         )}
