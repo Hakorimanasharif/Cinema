@@ -99,7 +99,7 @@ export default function MovieFilters({
     <div className="flex flex-wrap gap-3 mb-6">
       {isLoadingFilters ? (
         <div className="flex items-center justify-center py-4 w-full">
-          <div className="text-sm text-muted-foreground">Loading filters...</div>
+          <div className="text-sm text-muted-foreground"></div>
         </div>
       ) : (
         <>

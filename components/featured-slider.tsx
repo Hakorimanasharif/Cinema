@@ -91,7 +91,7 @@ export default function FeaturedSlider() {
             <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
             <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-red-400 rounded-full animate-spin animation-delay-500"></div>
           </div>
-          <div className="text-white text-2xl font-light tracking-widest animate-pulse">PREPARING CINEMATIC EXPERIENCE</div>
+          
         </div>
       </div>
     )
@@ -101,10 +101,8 @@ export default function FeaturedSlider() {
     return (
       <div className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
         <div className="text-center text-white max-w-2xl px-8">
-          <div className="text-8xl mb-6 animate-bounce">🎬</div>
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">CINEMA EXPERIENCE</h2>
-          <p className="text-xl text-gray-400 leading-relaxed">Immerse yourself in world-class storytelling. New featured content arriving soon.</p>
-        </div>
+         
+          </div>
       </div>
     )
   }
@@ -185,15 +183,15 @@ export default function FeaturedSlider() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap items-center gap-4">
-                  <Link href={`/play/${movie.id}`}>
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 
+                  <Link href={`/movie/${movie.id}`}>
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800
                                px-10 py-6 text-lg font-bold rounded-xl
                                transform hover:scale-105 transition-all duration-300
                                shadow-lg shadow-red-600/30 hover:shadow-red-600/50"
                     >
-                      <Play className="mr-3 h-5 w-5 fill-white" /> 
+                      <Play className="mr-3 h-5 w-5 fill-white" />
                       WATCH NOW
                     </Button>
                   </Link>
@@ -215,10 +213,10 @@ export default function FeaturedSlider() {
         </div>
       </div>
 
-      {/* Next Slide Preview Card - Left Side */}
+      {/* Next Slide Preview Card - Right Side */}
       {nextMovie && (
-        <div className="absolute left-8 bottom-8 z-30">
-          <div className="flex flex-col items-start gap-4">
+        <div className="absolute right-8 bottom-8 z-30">
+          <div className="flex flex-col items-end gap-4">
             {/* "Next" Label */}
             <div className="flex items-center gap-2 text-white/80">
               <span className="text-sm font-semibold tracking-wider uppercase">NEXT</span>
@@ -230,7 +228,7 @@ export default function FeaturedSlider() {
               onClick={() => setCurrentSlide(nextSlideIndex)}
               className="group relative transition-all duration-500 ease-out hover:scale-105"
             >
-              <div className="relative w-24 h-32 rounded-lg overflow-hidden shadow-2xl border-2 border-white/20 hover:border-white/40">
+              <div className="relative w-24 h-32 rounded-lg overflow-hidden shadow-2xl border-2 border-white/20 hover:border-white/40 border-rounded-lg">
                 <Image
                   src={nextMovie.coverImage || "/placeholder-image.jpg"}
                   alt={nextMovie.title}

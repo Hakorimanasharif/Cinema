@@ -166,7 +166,7 @@ export default function MoviePage({ params }: MoviePageProps) {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <LoadingSpinner size="lg" />
-          <p className="text-gray-400">Loading movie details...</p>
+          <p className="text-gray-400"></p>
         </div>
       </div>
     )
