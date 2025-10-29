@@ -4,11 +4,10 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Play, Star, Calendar, Eye, Clock, ArrowLeft, Users, Film, SeasonIcon, Heart, Share2 } from "lucide-react"
+import { Play, Star, Calendar, Eye, Clock, ArrowLeft, ChevronLeft, ChevronRight, Film } from "lucide-react"
 import TrailerButton from "@/components/trailer-button"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
@@ -54,6 +53,8 @@ export default function SeriesDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedSeason, setSelectedSeason] = useState<number>(1)
+  const [currentPage, setCurrentPage] = useState(1)
+  const episodesPerPage = 10
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -78,6 +79,10 @@ export default function SeriesDetailPage() {
 
     fetchSeries()
   }, [params.id])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedSeason])
 
   if (loading) {
     return (
@@ -116,294 +121,263 @@ export default function SeriesDetailPage() {
     )
   }
 
+  const currentSeason = series.seasons?.find(season => season.seasonNumber === selectedSeason)
+  const episodes = currentSeason?.episodes || []
+  const totalPages = Math.ceil(episodes.length / episodesPerPage)
+  const startIndex = (currentPage - 1) * episodesPerPage
+  const endIndex = startIndex + episodesPerPage
+  const currentEpisodes = episodes.slice(startIndex, endIndex)
+
   const totalEpisodes = series.seasons?.reduce((total, season) => total + season.episodes.length, 0) || 0
-  const totalSeasons = series.seasons?.length || 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      <Header />f
-      {/* Hero Section */}
-      <div className="relative h-80 md:h-[500px] lg:h-[600px] overflow-hidden">
-        <Image
-          src={series.coverImage || "/placeholder.svg"}
-          alt={series.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent" />
+      <Header />
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 lg:p-12">
-          <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-start md:items-end">
-              {/* Series Poster */}
-              <div className="w-32 md:w-48 lg:w-64 flex-shrink-0 transform -translate-y-8 md:translate-y-0">
-                <div className="relative group">
-                  <Image
-                    src={series.coverImage || "/placeholder.svg"}
-                    alt={series.title}
-                    width={256}
-                    height={384}
-                    className="w-full h-auto rounded-xl shadow-2xl transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-blue-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+      {/* Simplified Header */}
+      <div className="bg-gradient-to-r from-gray-900 to-black py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            {/* Poster */}
+            <div className="w-48 md:w-64 flex-shrink-0">
+              <Image
+                src={series.coverImage || "/placeholder.svg"}
+                alt={series.title}
+                width={256}
+                height={384}
+                className="w-full h-auto rounded-lg shadow-2xl"
+              />
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">{series.title}</h1>
+
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 mb-4">
+                {series.year && (
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {series.year}
+                  </Badge>
+                )}
+                {series.rating && (
+                  <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300">
+                    <Star className="w-4 h-4 mr-1 fill-yellow-400" />
+                    {String(series.rating)}
+                  </Badge>
+                )}
+                {series.category && (
+                  <Badge variant="secondary" className="bg-green-500/20 text-green-300">
+                    {series.category}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="bg-gray-500/20 text-gray-300">
+                  {totalEpisodes} Episodes
+                </Badge>
               </div>
 
-              {/* Series Info */}
-              <div className="flex-1 text-white space-y-4 md:space-y-6">
-                <div>
-                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-4 leading-tight">
-                    {series.title}
-                  </h1>
+              <p className="text-gray-300 text-lg mb-6 max-w-2xl">{series.description}</p>
 
-                  <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-3 md:mb-4">
-                    {series.year && (
-                      <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {series.year}
-                      </Badge>
-                    )}
-                    {series.rating && (
-                      <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
-                        <Star className="w-3 h-3 mr-1 fill-yellow-400" />
-                        {String(series.rating)}
-                      </Badge>
-                    )}
-                    {series.category && (
-                      <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
-                        {series.category}
-                      </Badge>
-                    )}
-                   
-                  </div>
-
-                  {series.views && (
-                    <div className="flex items-center gap-2 text-gray-300 text-sm">
-                      <Users className="w-4 h-4" />
-                      <span>{series.views.toLocaleString()} views</span>
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-base md:text-lg text-gray-200 leading-relaxed max-w-3xl">
-                  {series.description}
-                </p>
-
-                <div className="flex flex-wrap gap-3">
-                  {series.seasons && series.seasons.length > 0 && series.seasons[0].episodes.length > 0 && (
-                    <Link href={`/play/${series._id}?season=1&episode=1`}>
-                      <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-3 px-6 py-3 h-auto">
-                        <Play className="w-5 h-5" />
-                        <div className="text-left">
-                          <div className="font-semibold">Play Episode 1</div>
-                          <div className="text-xs opacity-90">Start watching now</div>
-                        </div>
-                      </Button>
-                    </Link>
-                  )}
-                  {series.trailerYouTubeId && (
-                    <TrailerButton
-                      videoId={series.trailerYouTubeId}
-                      className="bg-transparent border-gray-400 text-white hover:bg-white/10 gap-3 px-6 py-3 h-auto"
-                      isTrailer={true}
-                    >
-                      <Play className="w-5 h-5" />
-                      <div className="text-left">
-                        <div className="font-semibold">Watch Trailer</div>
-                        <div className="text-xs opacity-90">Preview the series</div>
-                      </div>
-                    </TrailerButton>
-                  )}
-                </div>
+              <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                {episodes.length > 0 && (
+                  <Link href={`/play/${series._id}?season=${selectedSeason}&episode=1`}>
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+                      <Play className="w-5 h-5 mr-2" />
+                      Watch Now
+                    </Button>
+                  </Link>
+                )}
+                {series.trailerYouTubeId && (
+                  <TrailerButton
+                    videoId={series.trailerYouTubeId}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3"
+                  />
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Season Navigation */}
         {series.seasons && series.seasons.length > 1 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-white mb-4">Seasons</h2>
-            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
+            <h2 className="text-2xl font-bold text-white mb-4">Seasons</h2>
+            <div className="flex gap-2 overflow-x-auto pb-4">
               {series.seasons.map((season) => (
                 <button
                   key={season.seasonNumber}
                   onClick={() => setSelectedSeason(season.seasonNumber)}
-                  className={`flex-shrink-0 px-6 py-3 rounded-xl border-2 transition-all ${
+                  className={`flex-shrink-0 px-6 py-3 rounded-lg border-2 transition-all ${
                     selectedSeason === season.seasonNumber
                       ? 'border-blue-500 bg-blue-500/20 text-white'
-                      : 'border-gray-600 bg-gray-800/50 text-gray-300 hover:border-gray-500 hover:bg-gray-700/50'
+                      : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
                   }`}
                 >
-                  <div className="text-center">
-                    <div className="font-semibold">Season {season.seasonNumber}</div>
-                    <div className="text-sm opacity-75">{season.episodes.length} episodes</div>
-                  </div>
+                  Season {season.seasonNumber}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Season Cards Grid */}
-        {series.seasons && series.seasons.length > 0 ? (
-          <div className="space-y-8">
-            {/* Grid View for Seasons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {series.seasons.map((season) => (
-                <Card
-                  key={season.seasonNumber}
-                  className="bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:border-gray-600 transition-all duration-300 hover:scale-105 group cursor-pointer"
-                  onClick={() => setSelectedSeason(season.seasonNumber)}
-                >
-                  <CardContent className="p-0 overflow-hidden">
-                    {/* Season Poster */}
-                    <div className="relative aspect-[2/3] overflow-hidden">
-                      <Image
-                        src={season.poster || series.coverImage || "/placeholder.svg"}
-                        alt={`${series.title} - Season ${season.seasonNumber}`}
-                        fill
-                        className="object-cover transition-transform group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
+        {/* Episodes Grid */}
+        {episodes.length > 0 ? (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                Season {selectedSeason} Episodes
+              </h2>
+              <Badge variant="secondary" className="bg-gray-700 text-gray-300">
+                {episodes.length} episodes
+              </Badge>
+            </div>
 
-                      {/* Overlay Info */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <div className="flex justify-between items-center mb-2">
-                          <Badge className="bg-blue-600/90 text-white border-0">
-                            Season {season.seasonNumber}
-                          </Badge>
-                          {season.rating && (
-                            <div className="flex items-center gap-1 bg-black/50 rounded-full px-2 py-1">
-                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                              <span className="text-xs font-medium">{season.rating}</span>
-                            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+              {currentEpisodes.map((episode) => (
+                <div key={episode.episodeNumber} className="group/card flex-none">
+                  <div className="relative aspect-[2/3] overflow-hidden rounded-2xl border border-gray-300/20 bg-gray-900/50 transition-all duration-500 ease-out group-hover/card:scale-105 group-hover/card:shadow-2xl group-hover/card:shadow-red-500/20">
+                    {/* Main Image */}
+                    <Image
+                      src={episode.thumbnail || series.coverImage || "/placeholder.svg"}
+                      alt={episode.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover/card:scale-110"
+                    />
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-all duration-500" />
+
+                    {/* Top Section - Episode Number */}
+                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-100">
+                      <div className="flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
+                        <Badge className="bg-black/80 text-white border-0 text-xs">
+                          E{episode.episodeNumber}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Center Section - Play Button */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-150 space-y-4">
+                      {/* Play Button */}
+                      {episode.videoUrl ? (
+                        <a href={episode.videoUrl} target="_blank" rel="noopener noreferrer">
+                          <Button
+                            size="icon"
+                            className="rounded-full bg-red-600 hover:bg-red-700 shadow-2xl w-16 h-16 transition-all duration-300 hover:scale-110 border-2 border-white/20"
+                          >
+                            <Play className="h-7 w-7 fill-white ml-1" />
+                          </Button>
+                        </a>
+                      ) : (
+                        <Link href={`/play/${series._id}?season=${selectedSeason}&episode=${episode.episodeNumber}`}>
+                          <Button
+                            size="icon"
+                            className="rounded-full bg-red-600 hover:bg-red-700 shadow-2xl w-16 h-16 transition-all duration-300 hover:scale-110 border-2 border-white/20"
+                          >
+                            <Play className="h-7 w-7 fill-white ml-1" />
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Bottom Section - Info */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-6 group-hover/card:translate-y-0 transition-transform duration-500">
+                      {/* Episode Info */}
+                      <div className="text-center space-y-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 delay-300">
+                        <h3 className="text-white font-bold text-sm line-clamp-1 drop-shadow-lg">{episode.title}</h3>
+                        <div className="flex items-center justify-center gap-3 text-xs text-gray-200">
+                          {episode.duration && (
+                            <span>{episode.duration}</span>
+                          )}
+                          {episode.views && (
+                            <>
+                              {episode.duration && <span className="w-1 h-1 bg-gray-400 rounded-full"></span>}
+                              <span>{episode.views.toLocaleString()} views</span>
+                            </>
                           )}
                         </div>
-                        <h3 className="font-semibold text-sm line-clamp-2">
-                          {series.title} - Season {season.seasonNumber}
-                        </h3>
                       </div>
+                    </div>
 
-                      {/* Play Button Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="bg-black/50 rounded-full p-4">
-                          <Play className="w-8 h-8 text-white fill-white" />
+                    {/* Shine Effect */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover/card:translate-x-[100%] transition-transform duration-1000" />
+                  </div>
+
+                  {/* Default Visible Info (when not hovering) */}
+                  <div className="mt-3 space-y-1 group-hover/card:opacity-0 transition-opacity duration-300">
+                    <h3 className="text-sm font-semibold text-white truncate">{episode.title}</h3>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">Episode {episode.episodeNumber}</p>
+                      {episode.views && (
+                        <div className="flex items-center gap-1">
+                          <Eye className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-gray-400">{episode.views.toLocaleString()}</span>
                         </div>
-                      </div>
+                      )}
                     </div>
-
-                    {/* Episode Count */}
-                    <div className="p-4">
-                      <div className="flex justify-between items-center text-sm text-gray-300">
-                        <span>{season.episodes.length} episodes</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {season.episodes[0]?.duration || 'Various'}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
 
-            {/* Episodes List for Selected Season */}
-            <div className="mt-12">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">
-                  Season {selectedSeason} Episodes
-                </h2>
-                <Badge variant="secondary" className="bg-gray-700 text-gray-300">
-                  {series.seasons.find(s => s.seasonNumber === selectedSeason)?.episodes.length || 0} episodes
-                </Badge>
-              </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </Button>
 
-              <div className="grid gap-4">
-                {series.seasons
-                  .find(season => season.seasonNumber === selectedSeason)
-                  ?.episodes.map((episode) => (
-                    <div
-                      key={episode.episodeNumber}
-                      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-gray-800/30 border border-gray-700 rounded-xl hover:bg-gray-700/50 transition-all group"
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className={currentPage === page
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "border-gray-600 text-gray-300 hover:bg-gray-700"
+                      }
                     >
-                      {/* Episode Thumbnail */}
-                      <div className="relative w-full sm:w-40 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
-                          src={episode.thumbnail || series.coverImage || "/placeholder.svg"}
-                          alt={episode.title}
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-                        <div className="absolute top-2 left-2">
-                          <Badge className="bg-black/80 text-white border-0 text-xs">
-                            E{episode.episodeNumber}
-                          </Badge>
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-8 h-8 text-white fill-white" />
-                        </div>
-                      </div>
-
-                      {/* Episode Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                          <h4 className="font-semibold text-white text-lg group-hover:text-blue-300 transition-colors">
-                            {episode.title}
-                          </h4>
-                          <Link
-                            href={`/play/${series._id}?season=${selectedSeason}&episode=${episode.episodeNumber}`}
-                            className="flex-shrink-0"
-                          >
-                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
-                              <Play className="w-4 h-4" />
-                              Play
-                            </Button>
-                          </Link>
-                        </div>
-
-                        <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                          {episode.description || `Episode ${episode.episodeNumber} of ${series.title}`}
-                        </p>
-
-                        <div className="flex items-center gap-4 text-xs text-gray-400">
-                          {episode.duration && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {episode.duration}
-                            </div>
-                          )}
-                          {episode.views && (
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-3 h-3" />
-                              {episode.views.toLocaleString()} views
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                      {page}
+                    </Button>
                   ))}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
-            </div>
-          </div>
+            )}
+          </>
         ) : (
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+          <Card className="bg-gray-800 border-gray-700">
             <CardContent className="p-12 text-center">
-              <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Film className="w-10 h-10 text-gray-400" />
-              </div>
+              <Film className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-medium text-white mb-2">No episodes available</h3>
-              <p className="text-gray-400">This series doesn't have any episodes yet.</p>
+              <p className="text-gray-400">This season doesn't have any episodes yet.</p>
             </CardContent>
           </Card>
         )}
       </div>
+
       <Footer />
     </div>
   )
