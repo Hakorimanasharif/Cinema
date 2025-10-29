@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Play, Star, Calendar, Eye, Clock, ArrowLeft, Users, Film, SeasonIcon, Heart, Share2 } from "lucide-react"
 import TrailerButton from "@/components/trailer-button"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
 
 interface Episode {
   episodeNumber: number
@@ -119,6 +121,7 @@ export default function SeriesDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+      <Header />f
       {/* Hero Section */}
       <div className="relative h-80 md:h-[500px] lg:h-[600px] overflow-hidden">
         <Image
@@ -173,12 +176,7 @@ export default function SeriesDetailPage() {
                         {series.category}
                       </Badge>
                     )}
-                    {totalSeasons > 0 && (
-                      <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                        <SeasonIcon className="w-3 h-3 mr-1" />
-                        {totalSeasons} Season{totalSeasons > 1 ? 's' : ''}
-                      </Badge>
-                    )}
+                   
                   </div>
 
                   {series.views && (
@@ -406,6 +404,7 @@ export default function SeriesDetailPage() {
           </Card>
         )}
       </div>
+      <Footer />
     </div>
   )
 }
